@@ -6,7 +6,6 @@ using Common.Configs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using Microsoft.Extensions.Options;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -21,12 +20,12 @@ builder.Services.AddAuthentication(options =>
     o.RequireHttpsMetadata = false;
     o.TokenValidationParameters = new TokenValidationParameters
     {
-        ValidateIssuer = true,
+        ValidateIssuer = false,
         ValidIssuer = authConfig.Issuer,
-        ValidateAudience = true,
+        ValidateAudience = false,
         ValidAudience = authConfig.Audience,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
+        ValidateLifetime = false,
+        ValidateIssuerSigningKey = false,
         IssuerSigningKey = authConfig.SymmetricSecurityKey(),
         ClockSkew = TimeSpan.Zero
     };
@@ -72,6 +71,14 @@ builder.Services.AddSwaggerGen(c =>
 });
 builder.Services.AddDatabase(builder.Configuration);
 builder.Services.AddServices();
+builder.Services.AddAuthorization(o =>
+{
+    o.AddPolicy("ValidAccessToken", p =>
+    {
+        p.AuthenticationSchemes.Add(JwtBearerDefaults.AuthenticationScheme);
+        p.RequireAuthenticatedUser();
+    });
+});
 
 var app = builder.Build();
 using (var serviceScope = ((IApplicationBuilder) app)

@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
+﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
 using Common.Configs;
 using Microsoft.IdentityModel.Tokens;
 
@@ -26,8 +21,7 @@ namespace Common.Helpers
             var encodedJwt = new JwtSecurityTokenHandler().WriteToken(jwt);
             return encodedJwt;
         }
-
-        public static void ValidateToken(AuthConfig config, string token)
+        public static bool ValidateToken(AuthConfig config, string token)
         {
             var validParams = new TokenValidationParameters
             {
@@ -40,7 +34,15 @@ namespace Common.Helpers
                 ValidIssuer = config.Issuer,
                 ClockSkew = TimeSpan.Zero
             };
-            new JwtSecurityTokenHandler().ValidateToken(token, validParams, out var securityToken);
+            try
+            {
+                new JwtSecurityTokenHandler().ValidateToken(token, validParams, out var securityToken);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         public static Claim[] GetClaimsFromToken(string token)

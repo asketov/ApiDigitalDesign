@@ -1,21 +1,18 @@
 ﻿using DAL;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
 using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
 using BLL.ModelsDTO.AuthModels;
 using Common.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Common.Configs;
-using Common.Exceptions;
+using Common.Exceptions.Auth;
 using Common.Exceptions.General;
 using Microsoft.Extensions.Options;
 
 namespace BLL.Services
 {
+    /// <summary>
+    /// service for authentication
+    /// </summary>
     public class AuthService
     {
         private readonly DataContext _db;
@@ -25,6 +22,12 @@ namespace BLL.Services
             _db = db;
             _config = config.Value;
         }
+        /// <summary>
+        /// Get access+refresh tokens by login+password
+        /// </summary>
+        /// <param name="dto"></param>
+        /// <returns>Access+refresh tokens</returns>
+        /// <exception cref="NotFoundException"></exception>
         public async Task<TokenModelDTO> LoginAsync(SignInDTO dto)
         {
             var passwordHash = HashHelper.GetHash(dto.Password);
@@ -46,10 +49,16 @@ namespace BLL.Services
             }
             else throw new NotFoundException();
         }
-
-        public async Task<TokenModelDTO> RefreshToken(string refreshToken)
+        /// <summary>
+        /// Takes Access+refresh tokens by refresh token
+        /// </summary>
+        /// <param name="refreshToken"></param>
+        /// <returns>Access+refresh tokens</returns>
+        /// <exception cref="InvalidTokenException"></exception>
+        /// <exception cref="NotFoundException"></exception>
+        public async Task<TokenModelDTO> RefreshTokenAsync(string refreshToken)
         {
-            JwtHelper.ValidateToken(_config, refreshToken);
+            if (!JwtHelper.ValidateToken(_config, refreshToken)) throw new InvalidTokenException();
             var claims = JwtHelper.GetClaimsFromToken(refreshToken);
             var userId = Guid.Parse(claims.First(x => x.Type == "id").Value);
             var user = await _db.Users.FirstOrDefaultAsync(user => user.Id == userId);
@@ -67,7 +76,6 @@ namespace BLL.Services
                 return response;
             }
             throw new NotFoundException();
-
         }
     }
 }

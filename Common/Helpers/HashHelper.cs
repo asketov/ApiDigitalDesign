@@ -24,7 +24,6 @@ namespace Common.Helpers
                 return sb.ToString();
             }
         }
-
         public static bool Verify(string input, string hash)
         {
             var hashInput = GetHash(input);
