@@ -1,14 +1,11 @@
-﻿using DAL;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+﻿using ApiDigitalDesign.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using BLL.Services;
 
-namespace BLL
+namespace ApiDigitalDesign
 {
     public static class DependencyInjection
     {

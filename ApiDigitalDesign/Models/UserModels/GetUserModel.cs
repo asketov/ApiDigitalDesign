@@ -5,16 +5,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BLL.ModelsDTO.AuthModels
+namespace ApiDigitalDesign.Models.UserModels
 {
-    public class SignInDTO
+    public class GetUserModel
     {
-        [Required]
-        [EmailAddress]
-        [MaxLength(250)]
+        public string Name { get; set; }
         public string Email { get; set; }
-        [Required]
-        [MaxLength(250)]
-        public string Password { get; set; }
+        public DateTimeOffset BirthDate { get; set; }
     }
 }

@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using BLL.ModelsDTO.AuthModels;
-using BLL.Services;
+using ApiDigitalDesign.Models.AuthModels;
+using ApiDigitalDesign.Services;
 using Common.Exceptions.Auth;
 using Common.Exceptions.General;
 using Microsoft.AspNetCore.Mvc;
@@ -36,7 +36,7 @@ namespace ApiDigitalDesign.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/json")]
         [HttpPost]
-        public async Task<ActionResult> Login(SignInDTO dto)
+        public async Task<ActionResult> Login(SignInModel dto)
         {
             try
             {

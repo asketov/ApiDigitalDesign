@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using BLL.ModelsDTO.UserModels;
+﻿using ApiDigitalDesign.Models.UserModels;
 using Common.Exceptions.General;
 using DAL;
 using DAL.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace BLL.Services
+namespace ApiDigitalDesign.Services
 {
     /// <summary>
     /// Service for manage users
@@ -28,7 +23,7 @@ namespace BLL.Services
         /// <param name="model"></param>
         /// <returns></returns>
         /// <exception cref="AlreadyExistException"></exception>
-        public async Task<Guid> CreateUserAsync(CreateUserDTO model)
+        public async Task<Guid> CreateUserAsync(CreateUserModel model)
         {
             var user = await _db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Email == model.Email);
             if (user!=null) throw new AlreadyExistException();

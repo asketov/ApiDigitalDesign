@@ -45,7 +45,7 @@ namespace Common.Helpers
             }
         }
 
-        public static Claim[] GetClaimsFromToken(string token)
+        public static Claim[] GetClaimsFromToken(string token) 
         {
             var jwtToken = new JwtSecurityTokenHandler().ReadJwtToken(token);
             return jwtToken.Claims.ToArray();

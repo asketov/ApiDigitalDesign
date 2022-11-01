@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using BLL.ModelsDTO.UserModels;
-using BLL.Services;
+using ApiDigitalDesign.Models.UserModels;
+using ApiDigitalDesign.Services;
 using Common.Exceptions.General;
 using DAL.Entities;
 using Microsoft.AspNetCore.Authorization;
@@ -38,7 +38,7 @@ namespace ApiDigitalDesign.Controllers
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
-        public async Task<IActionResult> CreateUser(CreateUserDTO dto)
+        public async Task<IActionResult> CreateUser(CreateUserModel dto)
         {
             try
             {
@@ -59,19 +59,23 @@ namespace ApiDigitalDesign.Controllers
         }
         /// <summary>
         /// Get current user
+        /// [Not completed]
+        /// While use this method for integration testing auth
         /// </summary>
         [HttpGet]
         [Authorize]
-        public async Task<User> GetCurrentUser()
+        public async Task<ActionResult> GetCurrentUser()
         {
             var userIdString = User.Claims.FirstOrDefault(x => x.Type == "id")?.Value;
             if (Guid.TryParse(userIdString, out var userId))
             {
 
-                return await _userService.GetUserAsync(userId);
+                var user = await _userService.GetUserAsync(userId);
+                return Ok(user);
             }
             else
-                throw new Exception("you are not authorized");
+                return new JsonResult(new { message = "you are not authorized" })
+                    { StatusCode = StatusCodes.Status401Unauthorized };
 
         }
     }

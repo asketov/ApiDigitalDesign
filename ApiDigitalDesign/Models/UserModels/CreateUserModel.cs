@@ -2,9 +2,9 @@
 using Common.Helpers;
 using DAL.Entities;
 
-namespace BLL.ModelsDTO.UserModels
+namespace ApiDigitalDesign.Models.UserModels
 {
-    public class CreateUserDTO
+    public class CreateUserModel
     {
         [Required]
         [MaxLength(250)]

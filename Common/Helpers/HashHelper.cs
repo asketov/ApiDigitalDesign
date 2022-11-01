@@ -20,7 +20,6 @@ namespace Common.Helpers
                 {
                     sb.Append(data[i].ToString("x2"));
                 }
-
                 return sb.ToString();
             }
         }

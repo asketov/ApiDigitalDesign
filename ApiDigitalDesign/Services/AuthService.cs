@@ -1,14 +1,14 @@
-﻿using DAL;
-using System.Security.Claims;
-using BLL.ModelsDTO.AuthModels;
-using Common.Helpers;
-using Microsoft.EntityFrameworkCore;
+﻿using System.Security.Claims;
+using ApiDigitalDesign.Models.AuthModels;
 using Common.Configs;
 using Common.Exceptions.Auth;
 using Common.Exceptions.General;
+using Common.Helpers;
+using DAL;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
-namespace BLL.Services
+namespace ApiDigitalDesign.Services
 {
     /// <summary>
     /// service for authentication
@@ -28,7 +28,7 @@ namespace BLL.Services
         /// <param name="dto"></param>
         /// <returns>Access+refresh tokens</returns>
         /// <exception cref="NotFoundException"></exception>
-        public async Task<TokenModelDTO> LoginAsync(SignInDTO dto)
+        public async Task<TokenModel> LoginAsync(SignInModel dto)
         {
             var passwordHash = HashHelper.GetHash(dto.Password);
             var user = await _db.Users
@@ -36,11 +36,11 @@ namespace BLL.Services
                     passwordHash == user.PasswordHash && user.Email == dto.Email);
             if (user != null)
             {
-                TokenModelDTO response = new TokenModelDTO();
+                TokenModel response = new TokenModel();
                 response.AccessToken = JwtHelper.CreateToken(_config, new Claim[]
                 {
                     new Claim("id", user.Id.ToString())
-                }, 15);
+                }, 1);
                 response.RefreshToken = JwtHelper.CreateToken(_config, new Claim[]
                 {
                     new Claim("id", user.Id.ToString())
@@ -56,7 +56,7 @@ namespace BLL.Services
         /// <returns>Access+refresh tokens</returns>
         /// <exception cref="InvalidTokenException"></exception>
         /// <exception cref="NotFoundException"></exception>
-        public async Task<TokenModelDTO> RefreshTokenAsync(string refreshToken)
+        public async Task<TokenModel> RefreshTokenAsync(string refreshToken)
         {
             if (!JwtHelper.ValidateToken(_config, refreshToken)) throw new InvalidTokenException();
             var claims = JwtHelper.GetClaimsFromToken(refreshToken);
@@ -64,7 +64,7 @@ namespace BLL.Services
             var user = await _db.Users.FirstOrDefaultAsync(user => user.Id == userId);
             if (user != null)
             {
-                TokenModelDTO response = new TokenModelDTO();
+                TokenModel response = new TokenModel();
                 response.AccessToken = JwtHelper.CreateToken(_config, new Claim[]
                 {
                     new Claim("id", user.Id.ToString())
