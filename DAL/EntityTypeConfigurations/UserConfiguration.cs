@@ -15,8 +15,6 @@ namespace DAL.EntityTypeConfigurations
         {
             builder.HasKey(user => user.Id);
             builder.HasIndex(user => user.Email).IsUnique();
-            builder.Property(user => user.Name).HasMaxLength(250);
-            builder.Property(user => user.Email).HasMaxLength(250);
         }
     }
 }

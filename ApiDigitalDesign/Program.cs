@@ -1,4 +1,6 @@
+using System.Reflection;
 using ApiDigitalDesign;
+using ApiDigitalDesign.AutoMapper;
 using ApiDigitalDesign.Services;
 using DAL;
 using Microsoft.EntityFrameworkCore;
@@ -36,6 +38,10 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
+builder.Services.AddAutoMapper(config =>
+{
+    config.AddProfile(new AssemblyMappingProfile(Assembly.GetExecutingAssembly()));
+});
 builder.Services.AddSwaggerGen();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddDatabase(builder.Configuration);

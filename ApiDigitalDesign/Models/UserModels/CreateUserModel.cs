@@ -1,10 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using ApiDigitalDesign.AutoMapper;
+using AutoMapper;
 using Common.Helpers;
 using DAL.Entities;
 
 namespace ApiDigitalDesign.Models.UserModels
 {
-    public class CreateUserModel
+    public class CreateUserModel : IMapWith<User>
     {
         [Required]
         [MaxLength(250)]
@@ -25,14 +27,13 @@ namespace ApiDigitalDesign.Models.UserModels
         [Required]
         public DateTimeOffset BirthDate { get; set; }
 
-        public User DtoToUser()
+        public void Mapping(Profile profile)
         {
-            return new User()
-            {
-                Name = Name, Email = Email,
-                PasswordHash = HashHelper.GetHash(Password),
-                BirthDate = BirthDate
-            };
+            profile.CreateMap<CreateUserModel, User>()
+                .ForMember(d => d.Id, m => m.MapFrom(s => Guid.NewGuid()))
+                .ForMember(d => d.PasswordHash, m => m.MapFrom(s => HashHelper.GetHash(s.Password)))
+                .ForMember(d => d.BirthDate, m => m.MapFrom(s => s.BirthDate.UtcDateTime))
+                ;
         }
     }
 }

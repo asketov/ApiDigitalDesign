@@ -14,9 +14,11 @@ namespace DAL
         protected override void OnModelCreating(ModelBuilder builder)
         {
             builder.ApplyConfiguration(new UserConfiguration());
+            builder.ApplyConfiguration(new UserSessionConfiguration());
             base.OnModelCreating(builder);
         }
 
         public DbSet<User> Users => Set<User>();
+        public DbSet<UserSession> UserSessions => Set<UserSession>();
     }
 }
