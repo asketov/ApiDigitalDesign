@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ApiDigitalDesign.Models.AttachModels;
 using ApiDigitalDesign.Models.UserModels;
 using ApiDigitalDesign.Services;
-using Common.Exceptions.General;
+using Common.Exceptions.Attach;
+using Common.Exceptions.User;
 using DAL.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -21,6 +23,56 @@ namespace ApiDigitalDesign.Controllers
         public UserController(UserService userService)
         {
             _userService = userService;
+        }
+        [HttpPost]
+        [Authorize]
+        public async Task<ActionResult> AddAvatarToUser(MetadataModel model)
+        {
+            var userIdString = User.Claims.FirstOrDefault(x => x.Type == "userId")?.Value;
+            if (Guid.TryParse(userIdString, out var userId))
+            {
+                try
+                {
+                    int avatarId = await _userService.AddAvatarToUser(userId, model);
+                    return new JsonResult(new {message = $"Server created new Avatar with id:{avatarId}"})
+                        { StatusCode = StatusCodes.Status201Created };
+                }
+                catch (UserNotFoundException)
+                {
+                    return new JsonResult(new {message = $"User not found"})
+                        {StatusCode = StatusCodes.Status404NotFound};
+                }
+                catch (FileNotExistException)
+                {
+                    return new JsonResult(new { message = $"File not exist in tempDirectory" })
+                        { StatusCode = StatusCodes.Status400BadRequest };
+                }
+            }
+            else
+                return new JsonResult(new { message = "Unauthorized" })
+                    { StatusCode = StatusCodes.Status401Unauthorized };
+        }
+
+        [HttpGet]
+        public async Task<FileResult> GetUserAvatar(Guid userId)
+        {
+            var attach = await _userService.GetUserAvatar(userId);
+
+            return File(System.IO.File.ReadAllBytes(attach.FilePath), attach.MimeType);
+        }
+
+        [HttpGet]
+        public async Task<FileResult> DownloadAvatar(Guid userId)
+        {
+            var attach = await _userService.GetUserAvatar(userId);
+
+            HttpContext.Response.ContentType = attach.MimeType;
+            FileContentResult result = new FileContentResult(System.IO.File.ReadAllBytes(attach.FilePath), attach.MimeType)
+            {
+                FileDownloadName = attach.Name
+            };
+
+            return result;
         }
         /// <summary>
         /// Create user in system
@@ -46,7 +98,7 @@ namespace ApiDigitalDesign.Controllers
                 return new JsonResult(new {message = $"Server created new User with id:{userId}"})
                     {StatusCode = StatusCodes.Status201Created};
             }
-            catch (AlreadyExistException)
+            catch (UserAlreadyExistException)
             {
                 return new JsonResult(new { message = "User is already exist" })
                     { StatusCode = StatusCodes.Status400BadRequest };
@@ -69,8 +121,7 @@ namespace ApiDigitalDesign.Controllers
             var userIdString = User.Claims.FirstOrDefault(x => x.Type == "id")?.Value;
             if (Guid.TryParse(userIdString, out var userId))
             {
-
-                var user = await _userService.GetUserAsync(userId);
+                var user = await _userService.GetUserModel(userId);
                 return Ok(user);
             }
             else

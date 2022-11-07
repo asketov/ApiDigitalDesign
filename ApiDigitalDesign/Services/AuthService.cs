@@ -2,7 +2,7 @@
 using ApiDigitalDesign.Models.AuthModels;
 using Common.Configs;
 using Common.Exceptions.Auth;
-using Common.Exceptions.General;
+using Common.Exceptions.User;
 using Common.Helpers;
 using DAL;
 using DAL.Entities;
@@ -31,23 +31,22 @@ namespace ApiDigitalDesign.Services
         /// Get access+refresh tokens by login+password
         /// </summary>
         /// <param name="model"></param>
-        /// <returns>Access+refresh tokens</returns>
-        /// <exception cref="NotFoundException"></exception>
+        /// <returns>Access+refresh tokens - <see cref="TokenModel"/></returns>
+        /// <exception cref="UserNotFoundException"></exception>
         public async Task<TokenModel> GetTokensAsync(SignInModel model)
         {
-            var user = await _userService.GetUserByCredention(model.Email, model.Password);
+            var user = await _userService.GetUserByCredentionAsync(model.Email, model.Password);
             var session = await _sessionService.CreateSession(user.Id);
-            var response = GenerateTokens(session);
-            return response;
+            var tokens = GenerateTokens(session);
+            return tokens;
         }
         /// <summary>
         /// Takes Access+refresh tokens by refresh token
         /// </summary>
         /// <param name="refreshToken"></param>
-        /// <returns>Access+refresh tokens</returns>
+        /// <returns>Access+refresh tokens: <see cref="TokenModel"/></returns>
         /// <exception cref="InvalidTokenException"></exception>
-        /// <exception cref="NotFoundException"></exception>
-        /// <exception cref="SessionExpiredException"></exception>
+        /// <exception cref="UserNotFoundException"></exception>
         public async Task<TokenModel> GetTokensByRefreshAsync(string refreshToken)
         {
             if (!JwtHelper.ValidateToken(_config, refreshToken)) throw new InvalidTokenException();
@@ -62,7 +61,7 @@ namespace ApiDigitalDesign.Services
                     var session = await  _sessionService.GetSessionByRefreshToken(refreshId);
                     if (!session.IsActive)
                     {
-                        throw new SessionExpiredException();
+                        throw new InvalidTokenException();
                     }
                     session.RefreshTokenId = Guid.NewGuid();
                     await _db.SaveChangesAsync();
@@ -70,22 +69,8 @@ namespace ApiDigitalDesign.Services
                 }
                 throw new InvalidTokenException();
             }
-            throw new NotFoundException();
+            throw new UserNotFoundException();
         }
-        /// <summary>
-        /// Make session is not active for user by userId
-        /// </summary>
-        /// <param name="userId"></param>
-        /// <exception cref="NotFoundException"></exception>
-        public async Task SignOutAsync(Guid userId)
-        {
-          var sess = await _db.UserSessions.FirstOrDefaultAsync(us 
-              => us.UserId == userId);
-          if (sess == null) throw new NotFoundException();
-          sess.IsActive = false;
-          await _db.SaveChangesAsync();
-        }
-
         private TokenModel GenerateTokens(UserSession sess)
         {
             var tokens = new TokenModel();
@@ -93,7 +78,7 @@ namespace ApiDigitalDesign.Services
             {
                 new Claim("userId", sess.UserId.ToString()),
                 new Claim("sessionId", sess.Id.ToString())
-            }, 1);
+            }, 15);
             tokens.RefreshToken = JwtHelper.CreateToken(_config, new Claim[]
             {
                 new Claim("userId", sess.UserId.ToString()),

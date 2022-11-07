@@ -6,8 +6,12 @@ using System.Threading.Tasks;
 
 namespace ApiDigitalDesign.Middlewares.TokenValidator
 {
-    public class TokenValidatorExtension
+    public static class TokenValidatorExtension
     {
-
+        public static IApplicationBuilder UseTokenValidator(
+            this IApplicationBuilder builder)
+        {
+            return builder.UseMiddleware<TokenValidatorMiddleware>();
+        }
     }
 }

@@ -1,5 +1,4 @@
-﻿using Common.Exceptions.General;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -7,6 +6,7 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using ApiDigitalDesign.Services;
 
 namespace ApiDigitalDesign.Middlewares.TokenValidator
 {
@@ -17,11 +17,25 @@ namespace ApiDigitalDesign.Middlewares.TokenValidator
         public TokenValidatorMiddleware(RequestDelegate next) =>
             _next = next;
 
-        public async Task InvokeAsync(HttpContext context)
+        public async Task InvokeAsync(HttpContext context, SessionService _sessionService)
         {
-            var refreshId =Guid.Parse(context.User.Claims
-                .FirstOrDefault(cl => cl.Type == "refreshId").Value);
-            await _next(context);
+            var isOk = true;
+            var sessionIdString = context.User.Claims.FirstOrDefault(x => x.Type == "sessionId")?.Value;
+            if (Guid.TryParse(sessionIdString, out var sessionId))
+            {
+                var session = await _sessionService.GetSessionById(sessionId);
+                if (!session.IsActive)
+                {
+                    isOk = false;
+                    context.Response.Clear();
+                    context.Response.StatusCode = 401;
+                }
+            }
+            if (isOk)
+            {
+                await _next(context);
+            }
+
         }
 
     }

@@ -1,6 +1,7 @@
 using System.Reflection;
 using ApiDigitalDesign;
 using ApiDigitalDesign.AutoMapper;
+using ApiDigitalDesign.Middlewares.TokenValidator;
 using ApiDigitalDesign.Services;
 using DAL;
 using Microsoft.EntityFrameworkCore;
@@ -12,7 +13,7 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 
 
 var builder = WebApplication.CreateBuilder(args);
-var authSection = builder.Configuration.GetSection("auth");
+var authSection = builder.Configuration.GetSection(AuthConfig.Position);
 var authConfig = authSection.Get<AuthConfig>();
 builder.Services.Configure<AuthConfig>(authSection);
 builder.Services.AddAuthentication(options =>
@@ -36,12 +37,12 @@ builder.Services.AddAuthentication(options =>
 // Add services to the container.
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
 builder.Services.AddAutoMapper(config =>
 {
     config.AddProfile(new AssemblyMappingProfile(Assembly.GetExecutingAssembly()));
 });
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
 builder.Services.AddSwaggerGen();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddDatabase(builder.Configuration);
@@ -78,7 +79,7 @@ app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
-
+app.UseTokenValidator();
 app.MapControllers();
 
 app.Run();

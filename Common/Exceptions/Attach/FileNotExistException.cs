@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Common.Exceptions.Auth
+namespace Common.Exceptions.Attach
 {
-    public class SessionExpiredException : Exception
+    public class FileNotExistException : Exception
     {
 
     }

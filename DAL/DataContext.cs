@@ -1,6 +1,7 @@
 ﻿using DAL.Entities;
 using DAL.EntityTypeConfigurations;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection.Emit;
 
 namespace DAL
 {
@@ -15,10 +16,14 @@ namespace DAL
         {
             builder.ApplyConfiguration(new UserConfiguration());
             builder.ApplyConfiguration(new UserSessionConfiguration());
+            builder.ApplyConfiguration(new AvatarConfiguration());
             base.OnModelCreating(builder);
         }
 
         public DbSet<User> Users => Set<User>();
         public DbSet<UserSession> UserSessions => Set<UserSession>();
+        public DbSet<Avatar> Avatars => Set<Avatar>();
+        public DbSet<Attach> Attaches => Set<Attach>();
+        
     }
 }

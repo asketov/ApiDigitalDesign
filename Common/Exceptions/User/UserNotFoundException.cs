@@ -1,9 +1,9 @@
-﻿namespace Common.Exceptions.General
+﻿namespace Common.Exceptions.User
 {
     /// <summary>
     /// Resourse not found
     /// </summary>
-    public class NotFoundException : Exception
+    public class UserNotFoundException : Exception
     {
        
     }

@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ApiDigitalDesign.Models.AuthModels;
+﻿using ApiDigitalDesign.Models.AuthModels;
 using ApiDigitalDesign.Services;
 using Common.Exceptions.Auth;
-using Common.Exceptions.General;
-using Microsoft.AspNetCore.Authorization;
+using Common.Exceptions.User;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ApiDigitalDesign.Controllers
@@ -43,7 +37,7 @@ namespace ApiDigitalDesign.Controllers
                 var response = await _authService.GetTokensAsync(dto);
                 return Ok(response);
             }
-            catch(NotFoundException)
+            catch(UserNotFoundException)
             {
                 return new JsonResult(new { message = "the server did not find such " +
                                                       "a user or the entered data was incorrect" })
@@ -72,7 +66,7 @@ namespace ApiDigitalDesign.Controllers
                 var tokenModel = await _authService.GetTokensByRefreshAsync(refreshToken);
                 return Ok(tokenModel);
             }
-            catch (NotFoundException)
+            catch (UserNotFoundException)
             {
                 return new JsonResult(new {message = "the server did not find such a user"}) 
                     {StatusCode = StatusCodes.Status404NotFound};
@@ -81,41 +75,6 @@ namespace ApiDigitalDesign.Controllers
             {
                 return new JsonResult(new {message = "token is invalid"})
                     { StatusCode = StatusCodes.Status400BadRequest };
-            }
-        }
-        /// <summary>
-        /// Sign in system
-        /// </summary>
-        /// <remarks>
-        /// Sample request:
-        /// Delete /login
-        /// </remarks>
-        /// <returns>Returns Access + Refresh tokens</returns>
-        /// <response code="200">Success</response>
-        /// <response code="400">Fields or token is not valid</response>
-        /// <response code="404">If the user is not exist or data is incorrect</response>
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [HttpDelete("{userId}")]
-        [Authorize]
-        public async Task<ActionResult> SignOut(Guid userId)
-        {
-            try
-            {
-                await _authService.SignOutAsync(userId);
-                return new JsonResult(new { message = "the user successfully sign out" })
-                    { StatusCode = StatusCodes.Status202Accepted };
-            }
-            catch (NotFoundException)
-            {
-                return new JsonResult(new { message = "the server did not find such a user" })
-                    { StatusCode = StatusCodes.Status404NotFound };
-            }
-            catch
-            {
-                return new JsonResult(new { message = "Server can't process the request" })
-                    { StatusCode = StatusCodes.Status503ServiceUnavailable };
             }
         }
     }

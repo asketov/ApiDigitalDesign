@@ -3,7 +3,7 @@ using DAL;
 using DAL.Entities;
 using Microsoft.EntityFrameworkCore;
 using Common.Exceptions.Auth;
-using Common.Exceptions.General;
+using Common.Exceptions.User;
 
 namespace ApiDigitalDesign.Services
 {
@@ -43,13 +43,13 @@ namespace ApiDigitalDesign.Services
         /// </summary>
         /// <param name="id"></param>
         /// <returns>UserSession</returns>
-        /// <exception cref="NotFoundException"></exception>
+        /// <exception cref="UserNotFoundException"></exception>
         public async Task<UserSession> GetSessionById(Guid id)
         {
             var session = await _db.UserSessions.FirstOrDefaultAsync(x => x.Id == id);
             if (session == null)
             {
-                throw new NotFoundException();
+                throw new UserNotFoundException();
             }
             return session;
         }
@@ -58,7 +58,7 @@ namespace ApiDigitalDesign.Services
         /// </summary>
         /// <param name="refreshTokenId"></param>
         /// <returns>userSession</returns>
-        /// <exception cref="NotFoundException"></exception>
+        /// <exception cref="InvalidTokenException"></exception>
         public async Task<UserSession> GetSessionByRefreshToken(Guid refreshTokenId)
         {
             var sess = await _db.UserSessions.Include(us => us.User)
