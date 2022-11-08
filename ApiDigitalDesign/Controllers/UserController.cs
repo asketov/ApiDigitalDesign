@@ -8,6 +8,7 @@ using ApiDigitalDesign.Models.UserModels;
 using ApiDigitalDesign.Services;
 using Common.Exceptions.Attach;
 using Common.Exceptions.User;
+using Common.Statics;
 using DAL.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -28,7 +29,7 @@ namespace ApiDigitalDesign.Controllers
         [Authorize]
         public async Task<ActionResult> AddAvatarToUser(MetadataModel model)
         {
-            var userIdString = User.Claims.FirstOrDefault(x => x.Type == "userId")?.Value;
+            var userIdString = User.Claims.FirstOrDefault(x => x.Type == Auth.UserClaim)?.Value;
             if (Guid.TryParse(userIdString, out var userId))
             {
                 try
@@ -39,12 +40,12 @@ namespace ApiDigitalDesign.Controllers
                 }
                 catch (UserNotFoundException)
                 {
-                    return new JsonResult(new {message = $"User not found"})
+                    return new JsonResult(new {message = "User not found"})
                         {StatusCode = StatusCodes.Status404NotFound};
                 }
                 catch (FileNotExistException)
                 {
-                    return new JsonResult(new { message = $"File not exist in tempDirectory" })
+                    return new JsonResult(new { message = "File not exist in tempDirectory" })
                         { StatusCode = StatusCodes.Status400BadRequest };
                 }
             }
@@ -54,42 +55,40 @@ namespace ApiDigitalDesign.Controllers
         }
 
         [HttpGet]
-        public async Task<FileResult> GetUserAvatar(Guid userId)
+        public async Task<ActionResult> GetUserAvatar(Guid userId)
         {
-            var attach = await _userService.GetUserAvatar(userId);
-
-            return File(System.IO.File.ReadAllBytes(attach.FilePath), attach.MimeType);
+            try
+            {
+                var attach = await _userService.GetUserAvatar(userId);
+                return File(System.IO.File.ReadAllBytes(attach.FilePath), attach.MimeType);
+            }
+            catch(UserNotFoundException ex)
+            {
+                return new JsonResult(new { message = "User not found" })
+                    { StatusCode = StatusCodes.Status404NotFound };
+            }
         }
 
         [HttpGet]
-        public async Task<FileResult> DownloadAvatar(Guid userId)
+        public async Task<ActionResult> DownloadAvatar(Guid userId)
         {
-            var attach = await _userService.GetUserAvatar(userId);
-
-            HttpContext.Response.ContentType = attach.MimeType;
-            FileContentResult result = new FileContentResult(System.IO.File.ReadAllBytes(attach.FilePath), attach.MimeType)
+            try
             {
-                FileDownloadName = attach.Name
-            };
-
-            return result;
+                var attach = await _userService.GetUserAvatar(userId);
+                HttpContext.Response.ContentType = attach.MimeType;
+                FileContentResult result = new FileContentResult(System.IO.File.ReadAllBytes(attach.FilePath), attach.MimeType)
+                {
+                    FileDownloadName = attach.Name
+                };
+                return result;
+            }
+            catch (UserNotFoundException ex)
+            {
+                return new JsonResult(new { message = "User not found" })
+                    { StatusCode = StatusCodes.Status404NotFound };
+            }
         }
-        /// <summary>
-        /// Create user in system
-        /// </summary>
-        /// <remarks>
-        /// Sample request:
-        /// Post /createuser body: { "name": "string", "email": "user@example.com", "password": "string",
-        /// "confirmPassword": "string", "birthDate": "2022-10-29T19:11:31.165Z" }
-        /// </remarks>
-        /// <returns>Returns Created Resource</returns>
-        /// <response code="400">Fields is not valid or user already exist</response>
-        /// <response code="201">Success, in response userId</response>
-        /// <response code="503">If the user is not created</response>
         [HttpPost]
-        [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
         public async Task<IActionResult> CreateUser(CreateUserModel dto)
         {
             try
@@ -109,16 +108,11 @@ namespace ApiDigitalDesign.Controllers
                     { StatusCode = StatusCodes.Status503ServiceUnavailable };
             }
         }
-        /// <summary>
-        /// Get current user
-        /// [Not completed]
-        /// While use this method for integration testing auth
-        /// </summary>
         [HttpGet]
         [Authorize]
         public async Task<ActionResult> GetCurrentUser()
         {
-            var userIdString = User.Claims.FirstOrDefault(x => x.Type == "id")?.Value;
+            var userIdString = User.Claims.FirstOrDefault(x => x.Type == Auth.UserClaim)?.Value;
             if (Guid.TryParse(userIdString, out var userId))
             {
                 var user = await _userService.GetUserModel(userId);

@@ -38,16 +38,21 @@ namespace ApiDigitalDesign.Services
             var user = await _db.Users.Include(x => x.Avatar).FirstOrDefaultAsync(x => x.Id == userId);
             if (user != null)
             {
-                var avatar = new Avatar { Author = user, MimeType = model.MimeType, FilePath = path, Name = model.Name, Size = model.Size };
+                var avatar = new Avatar { Author = user, MimeType = model.MimeType, FilePath = path, Name = model.Name, Size = model.Size, Id = Guid.NewGuid() };
                 user.Avatar = avatar;
                 var t = await _db.SaveChangesAsync();
                 return t;
             } 
-            throw new UserNotFoundException();
+            throw new UserNotFoundException("user with such userId don't exist");
         }
 
         
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        /// <exception cref="UserNotFoundException"></exception>
         public async Task<AttachModel> GetUserAvatar(Guid userId)
         {
             var user = await GetUserByIdAsync(userId);
@@ -64,34 +69,35 @@ namespace ApiDigitalDesign.Services
         {
             var user = await _db.Users.AsNoTracking()
                 .FirstOrDefaultAsync(u => u.Email == model.Email);
-            if (user!=null) throw new UserAlreadyExistException();
+            if (user!=null) throw new UserAlreadyExistException("such user already exist");
             user = _mapper.Map<User>(model);
             var t =  _db.Users.Add(user);
             await _db.SaveChangesAsync();
             return t.Entity.Id;
         }
         /// <summary>
-        /// Get user by Guid id
+        /// Get user include avatar by Guid id
         /// </summary>
         /// <param name="id"></param>
-        /// <returns></returns>
+        /// <returns><see cref="User"/></returns>
         /// <exception cref="UserNotFoundException"></exception>
-        private async Task<User> GetUserByIdAsync(Guid id)
+        public async Task<User> GetUserByIdAsync(Guid id)
         {
-            var user = await _db.Users.FirstOrDefaultAsync(x => x.Id == id);
+            var user = await _db.Users.Include(x=>x.Avatar).FirstOrDefaultAsync(x => x.Id == id);
             if (user == null)
-                throw new UserNotFoundException();
+                throw new UserNotFoundException("user with such id not found");
             return user;
         }
         /// <summary>
-        /// 
+        /// Get userModel
         /// </summary>
         /// <param name="id"></param>
-        /// <returns></returns>
-        public async Task<GetUserModel> GetUserModel(Guid id)
+        /// <returns><see cref="UserModel"/></returns>
+        /// <exception cref="UserNotFoundException"></exception>
+        public async Task<UserModel> GetUserModel(Guid id)
         {
             var user = await GetUserByIdAsync(id);
-            return _mapper.Map<GetUserModel>(user);
+            return _mapper.Map<UserModel>(user);
         }
 
         /// <summary>
@@ -99,12 +105,12 @@ namespace ApiDigitalDesign.Services
         /// </summary>
         /// <returns></returns>
         /// <exception cref="UserNotFoundException"></exception>
-        public async Task<List<GetUserModel>> GetUsersAsync()
+        public async Task<List<UserModel>> GetUsersAsync()
         {
             var users = await _db.Users.AsNoTracking()
-                .ProjectTo<GetUserModel>(_mapper.ConfigurationProvider).ToListAsync();
+                .ProjectTo<UserModel>(_mapper.ConfigurationProvider).ToListAsync();
             if (users == null)
-                throw new UserNotFoundException();
+                throw new UserNotFoundException("no user exists");
             return users;
         }
         /// <summary>
@@ -120,7 +126,7 @@ namespace ApiDigitalDesign.Services
             var user = await _db.Users
                 .FirstOrDefaultAsync(user => user.Email == email &
                     passwordHash == user.PasswordHash);
-            if (user == null) throw new UserNotFoundException();
+            if (user == null) throw new UserNotFoundException("such user not found");
             return user;
         }
     }

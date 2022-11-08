@@ -1,17 +1,29 @@
 ﻿using ApiDigitalDesign.Models.AttachModels;
+using AutoMapper;
 using Common.Exceptions.Attach;
 using Common.Exceptions.User;
+using DAL;
+using Microsoft.EntityFrameworkCore;
 
 namespace ApiDigitalDesign.Services
 {
     public class AttachService
     {
+        private readonly DataContext _db;
+        private readonly IMapper _mapper;
+
+        public AttachService(DataContext db, IMapper mapper)
+        {
+            _db = db;
+            _mapper = mapper;
+        }
+
         /// <summary>
         /// Add files to tempFolder.
         /// </summary>
         /// <param name="files"></param>
         /// <returns><see cref="MetadataModel"/></returns>
-        /// <exception cref="FileAlreadyExistException">One of the files has already exist name.</exception>
+        /// <exception cref="FileAlreadyExistException">One of the files has already such exist name.</exception>
         /// <exception cref="DirectoryNotExistException">TempDirectory don't exist.</exception>
         public async Task<List<MetadataModel>> UploadFiles(List<IFormFile> files)
         {
@@ -31,13 +43,13 @@ namespace ApiDigitalDesign.Services
                 var fileinfo = new FileInfo(newPath);
                 if (fileinfo.Exists)
                 {
-                    throw new FileAlreadyExistException();
+                    throw new FileAlreadyExistException("One of Files in tempDirectory is already exist");
                 }
                 else
                 {
                     if (fileinfo.Directory == null)
                     {
-                        throw new DirectoryNotExistException();
+                        throw new DirectoryNotExistException("Temp Folder is not exist");
                     }
                     else if (!fileinfo.Directory.Exists)
                     {
@@ -61,12 +73,27 @@ namespace ApiDigitalDesign.Services
         public static string CopyTempFileToAttaches(Guid TempId)
         {
             var tempFi = new FileInfo(Path.Combine(Path.GetTempPath(), TempId.ToString()));
-            if (!tempFi.Exists) throw new FileNotExistException();
+            if (!tempFi.Exists) throw new FileNotExistException("File in tempDirectory not found");
             var path = Path.Combine(Directory.GetCurrentDirectory(), "attaches", TempId.ToString());
             var destFi = new FileInfo(path);
             if (destFi.Directory != null && !destFi.Directory.Exists) destFi.Directory.Create();
             System.IO.File.Copy(tempFi.FullName, path, true);
             return path;
         }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="attachId"></param>
+        /// <returns></returns>
+        /// <exception cref="AttachNotFoundException"></exception>
+        public async Task<AttachModel> GetAttachAsync(Guid attachId)
+        {
+            var attach = await _db.Attaches.FirstOrDefaultAsync(u => u.Id == attachId);
+            if (attach == null) throw new AttachNotFoundException("attach not found");
+            var attachModel = _mapper.Map<AttachModel>(attach);
+            return attachModel;
+        }
+
+
     }
 }

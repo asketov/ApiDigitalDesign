@@ -60,7 +60,7 @@ var app = builder.Build();
 using (var serviceScope = ((IApplicationBuilder) app)
        .ApplicationServices.GetService<IServiceScopeFactory>()?.CreateScope())
 {
-    if(serviceScope!= null)
+    if (serviceScope != null)
     {
         var context = serviceScope.ServiceProvider
             .GetRequiredService<DataContext>();

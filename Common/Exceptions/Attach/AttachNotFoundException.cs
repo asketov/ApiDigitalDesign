@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace Common.Exceptions.Attach
 {
-    public class DirectoryNotExistException : Exception
+    public class AttachNotFoundException : Exception
     {
-        public DirectoryNotExistException(string message) : base(message)
+        public AttachNotFoundException(string message) : base(message)
         {
 
         }

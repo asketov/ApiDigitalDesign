@@ -17,6 +17,7 @@ namespace DAL
             builder.ApplyConfiguration(new UserConfiguration());
             builder.ApplyConfiguration(new UserSessionConfiguration());
             builder.ApplyConfiguration(new AvatarConfiguration());
+            builder.ApplyConfiguration(new PostAttachConfiguration());
             base.OnModelCreating(builder);
         }
 
@@ -24,6 +25,8 @@ namespace DAL
         public DbSet<UserSession> UserSessions => Set<UserSession>();
         public DbSet<Avatar> Avatars => Set<Avatar>();
         public DbSet<Attach> Attaches => Set<Attach>();
-        
+        public DbSet<Post> Posts => Set<Post>();
+        public DbSet<Comment> Comments => Set<Comment>();
+        public DbSet<PostAttach> PostAttaches => Set<PostAttach>();
     }
 }

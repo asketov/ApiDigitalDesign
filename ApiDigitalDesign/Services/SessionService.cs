@@ -3,6 +3,7 @@ using DAL;
 using DAL.Entities;
 using Microsoft.EntityFrameworkCore;
 using Common.Exceptions.Auth;
+using Common.Exceptions.Session;
 using Common.Exceptions.User;
 
 namespace ApiDigitalDesign.Services
@@ -49,7 +50,7 @@ namespace ApiDigitalDesign.Services
             var session = await _db.UserSessions.FirstOrDefaultAsync(x => x.Id == id);
             if (session == null)
             {
-                throw new UserNotFoundException();
+                throw new SessionNotFoundException("such session not find");
             }
             return session;
         }
@@ -65,7 +66,7 @@ namespace ApiDigitalDesign.Services
                 .FirstOrDefaultAsync(us => us.RefreshTokenId == refreshTokenId);
             if (sess == null)
             {
-                throw new InvalidTokenException();
+                throw new InvalidTokenException("in token invalid session");
             }
             return sess;
         }

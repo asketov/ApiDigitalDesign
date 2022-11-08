@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using ApiDigitalDesign.Services;
+using Common.Statics;
 
 namespace ApiDigitalDesign.Middlewares.TokenValidator
 {
@@ -20,7 +21,7 @@ namespace ApiDigitalDesign.Middlewares.TokenValidator
         public async Task InvokeAsync(HttpContext context, SessionService _sessionService)
         {
             var isOk = true;
-            var sessionIdString = context.User.Claims.FirstOrDefault(x => x.Type == "sessionId")?.Value;
+            var sessionIdString = context.User.Claims.FirstOrDefault(x => x.Type == Auth.SessionClaim)?.Value;
             if (Guid.TryParse(sessionIdString, out var sessionId))
             {
                 var session = await _sessionService.GetSessionById(sessionId);

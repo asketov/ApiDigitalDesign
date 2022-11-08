@@ -15,7 +15,8 @@ namespace ApiDigitalDesign
             services.AddScoped<UserService>();
             services.AddScoped<AuthService>();
             services.AddScoped<SessionService>();
-            services.AddTransient<AttachService>();
+            services.AddScoped<AttachService>();
+            services.AddScoped<PostService>();
             return services;
         }
     }

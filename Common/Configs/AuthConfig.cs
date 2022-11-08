@@ -5,7 +5,7 @@ namespace Common.Configs
 {
     public class AuthConfig
     {
-        public static string Position { get; set; } = "auth";
+        public static string Position { get; } = "auth";
         public string Issuer { get; set; }
         public string Audience { get; set; }
         public string Key { get; set; }

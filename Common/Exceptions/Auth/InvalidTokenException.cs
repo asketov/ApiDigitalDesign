@@ -11,7 +11,7 @@ namespace Common.Exceptions.Auth
     /// </summary>
     public class InvalidTokenException : Exception
     {
-        public InvalidTokenException()
+        public InvalidTokenException(string message) : base(message)
         {
 
         }

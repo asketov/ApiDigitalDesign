@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Common.Exceptions.Attach
+namespace Common.Exceptions.Posts
 {
-    public class FileNotExistException : Exception
+    public class CommentNotFoundException : Exception
     {
-        public FileNotExistException(string message) : base(message)
+        public CommentNotFoundException(string mes) : base(mes)
         {
 
         }

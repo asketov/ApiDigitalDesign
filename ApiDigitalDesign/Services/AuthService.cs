@@ -4,6 +4,7 @@ using Common.Configs;
 using Common.Exceptions.Auth;
 using Common.Exceptions.User;
 using Common.Helpers;
+using Common.Statics;
 using DAL;
 using DAL.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -49,41 +50,41 @@ namespace ApiDigitalDesign.Services
         /// <exception cref="UserNotFoundException"></exception>
         public async Task<TokenModel> GetTokensByRefreshAsync(string refreshToken)
         {
-            if (!JwtHelper.ValidateToken(_config, refreshToken)) throw new InvalidTokenException();
+            if (!JwtHelper.ValidateToken(_config, refreshToken)) throw new InvalidTokenException("token is invalid");
             var claims = JwtHelper.GetClaimsFromToken(refreshToken);
-            var userId = Guid.Parse(claims.First(x => x.Type == "userId").Value);
+            var userId = Guid.Parse(claims.First(x => x.Type == Auth.UserClaim).Value);
             var user = await _db.Users.FirstOrDefaultAsync(user => user.Id == userId);
             if (user != null)
             {
-                if (claims.FirstOrDefault(x => x.Type == "refreshTokenId")?.Value is String refreshIdString
+                if (claims.FirstOrDefault(x => x.Type == Auth.RefreshClaim)?.Value is String refreshIdString
                     && Guid.TryParse(refreshIdString, out var refreshId))
                 {
                     var session = await  _sessionService.GetSessionByRefreshToken(refreshId);
                     if (!session.IsActive)
                     {
-                        throw new InvalidTokenException();
+                        throw new InvalidTokenException("session is not active");
                     }
                     session.RefreshTokenId = Guid.NewGuid();
                     await _db.SaveChangesAsync();
                     return GenerateTokens(session);
                 }
-                throw new InvalidTokenException();
+                throw new InvalidTokenException("refreshTokenId not valid");
             }
-            throw new UserNotFoundException();
+            throw new UserNotFoundException("such user don't exist");
         }
         private TokenModel GenerateTokens(UserSession sess)
         {
             var tokens = new TokenModel();
             tokens.AccessToken = JwtHelper.CreateToken(_config, new Claim[]
             {
-                new Claim("userId", sess.UserId.ToString()),
-                new Claim("sessionId", sess.Id.ToString())
-            }, 15);
+                new Claim(Auth.UserClaim, sess.UserId.ToString()),
+                new Claim(Auth.SessionClaim, sess.Id.ToString())
+            }, Auth.AccessTokenLifeTime);
             tokens.RefreshToken = JwtHelper.CreateToken(_config, new Claim[]
             {
-                new Claim("userId", sess.UserId.ToString()),
-                new Claim("refreshTokenId", sess.RefreshTokenId.ToString())
-            }, 1200);
+                new Claim(Auth.UserClaim, sess.UserId.ToString()),
+                new Claim(Auth.RefreshClaim, sess.RefreshTokenId.ToString())
+            }, Auth.RefreshTokenLifeTime);
             return tokens;
         }
     }
