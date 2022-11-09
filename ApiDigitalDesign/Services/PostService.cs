@@ -141,7 +141,7 @@ namespace ApiDigitalDesign.Services
         {
             var comments = await _db.Comments.Where(comm=>comm.PostId==postId).AsNoTracking()
                 .ProjectTo<CommentModel>(_mapper.ConfigurationProvider).ToListAsync();
-            if (comments.Any() == false)
+            if (!comments.Any())
                 throw new CommentNotFoundException("In this post not exist anyone comment or postId invalid");
             return comments;
         }
