@@ -68,7 +68,7 @@ namespace ApiDigitalDesign.Services
         /// <exception cref="PostNotFoundException"></exception>
         public async Task<PostModel> GetPostModel(Guid postId)
         {
-            var post = await _db.Posts.Include(x=>x.PostAttaches)
+            var post = await _db.Posts.Include(x=>x.PostAttaches).AsNoTracking()
                 .FirstOrDefaultAsync(p => p.Id == postId);
             if (post != null)
             {
@@ -141,8 +141,8 @@ namespace ApiDigitalDesign.Services
         {
             var comments = await _db.Comments.Where(comm=>comm.PostId==postId).AsNoTracking()
                 .ProjectTo<CommentModel>(_mapper.ConfigurationProvider).ToListAsync();
-            if (comments == null)
-                throw new CommentNotFoundException("In this post not exist anyone comment");
+            if (comments.Any() == false)
+                throw new CommentNotFoundException("In this post not exist anyone comment or postId invalid");
             return comments;
         }
 

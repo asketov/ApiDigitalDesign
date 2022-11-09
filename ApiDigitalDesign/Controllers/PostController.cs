@@ -106,7 +106,7 @@ namespace ApiDigitalDesign.Controllers
                 try
                 {
                     var commendId = await _postService.CreateCommentAsync(model, userId);
-                    return new JsonResult(new {message = $"Server created new Post with id:{commendId}"})
+                    return new JsonResult(new {message = $"Server created new Comment with id:{commendId}"})
                         {StatusCode = StatusCodes.Status200OK};
                 }
                 catch (UserNotFoundException ex)
