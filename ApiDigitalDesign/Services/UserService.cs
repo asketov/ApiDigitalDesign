@@ -32,7 +32,7 @@ namespace ApiDigitalDesign.Services
         /// <returns>Id created resource.</returns>
         /// <exception cref="UserNotFoundException"></exception>
         /// <exception cref="FileNotExistException"></exception>
-        public async Task<int> AddAvatarToUser(Guid userId, MetadataModel model)
+        public async Task<Guid> AddAvatarToUser(Guid userId, MetadataModel model)
         {
             var path = AttachService.CopyTempFileToAttaches(model.TempId);
             var user = await _db.Users.Include(x => x.Avatar).FirstOrDefaultAsync(x => x.Id == userId);
@@ -40,8 +40,9 @@ namespace ApiDigitalDesign.Services
             {
                 var avatar = new Avatar { Author = user, MimeType = model.MimeType, FilePath = path, Name = model.Name, Size = model.Size, Id = Guid.NewGuid() };
                 user.Avatar = avatar;
-                var t = await _db.SaveChangesAsync();
-                return t;
+                _db.Avatars.Add(avatar);
+                await _db.SaveChangesAsync();
+                return avatar.Id;
             } 
             throw new UserNotFoundException("user with such userId don't exist");
         }

@@ -34,7 +34,7 @@ namespace ApiDigitalDesign.Controllers
             {
                 try
                 {
-                    int avatarId = await _userService.AddAvatarToUser(userId, model);
+                    Guid avatarId = await _userService.AddAvatarToUser(userId, model);
                     return new JsonResult(new {message = $"Server created new Avatar with id:{avatarId}"})
                         { StatusCode = StatusCodes.Status201Created };
                 }
