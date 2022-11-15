@@ -7,6 +7,9 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using ApiDigitalDesign.Services;
+using Common.Exceptions.Session;
+using Common.Exceptions.User;
+using Common.Generics;
 using Common.Statics;
 
 namespace ApiDigitalDesign.Middlewares.TokenValidator
@@ -18,25 +21,29 @@ namespace ApiDigitalDesign.Middlewares.TokenValidator
         public TokenValidatorMiddleware(RequestDelegate next) =>
             _next = next;
 
-        public async Task InvokeAsync(HttpContext context, SessionService _sessionService)
+        public async Task InvokeAsync(HttpContext context, SessionService sessionService)
         {
-            var isOk = true;
-            var sessionIdString = context.User.Claims.FirstOrDefault(x => x.Type == Auth.SessionClaim)?.Value;
-            if (Guid.TryParse(sessionIdString, out var sessionId))
+            try
             {
-                var session = await _sessionService.GetSessionById(sessionId);
+                var isOk = true;
+                var sessionId = context.User.Claims.GetClaimValueOrDefault<Guid>(Auth.SessionClaim);
+                var session = await sessionService.GetSessionById(sessionId);
                 if (!session.IsActive)
                 {
                     isOk = false;
                     context.Response.Clear();
                     context.Response.StatusCode = 401;
                 }
+                if (isOk)
+                {
+                    await _next(context);
+                }
             }
-            if (isOk)
+            catch(SessionNotFoundException)
             {
-                await _next(context);
+                context.Response.Clear();
+                context.Response.StatusCode = 401;
             }
-
         }
 
     }

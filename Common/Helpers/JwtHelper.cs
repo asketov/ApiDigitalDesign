@@ -7,7 +7,7 @@ namespace Common.Helpers
 {
     public static class JwtHelper
     {
-        public static string CreateToken(AuthConfig config, Claim[] claims, int lifeTimeInMinutes)
+        public static string CreateToken(AuthConfig config, IEnumerable<Claim> claims, int lifeTimeInMinutes)
         {
             var dtNow = DateTime.Now;
             var jwt = new JwtSecurityToken(
@@ -45,10 +45,10 @@ namespace Common.Helpers
             }
         }
 
-        public static Claim[] GetClaimsFromToken(string token) 
+        public static IEnumerable<Claim> GetClaimsFromToken(string token) 
         {
             var jwtToken = new JwtSecurityTokenHandler().ReadJwtToken(token);
-            return jwtToken.Claims.ToArray();
+            return jwtToken.Claims;
         }
     }
 }

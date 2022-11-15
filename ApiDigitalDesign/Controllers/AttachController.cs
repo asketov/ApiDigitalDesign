@@ -2,19 +2,23 @@
 using ApiDigitalDesign.Services;
 using Common.Exceptions.Attach;
 using Common.Exceptions.User;
-using DAL.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ApiDigitalDesign.Controllers
 {
     [Route("api/[controller]/[action]")]
     [ApiController]
-    public class AttachController : ControllerBase
+    public class AttachController : BaseController
     {
         private readonly AttachService _attachService;
-        public AttachController(AttachService attachService)
+        private readonly PostService _postService;
+        private readonly UserService _userService;
+        public AttachController(AttachService attachService, UserService userService, PostService postService)
         {
             _attachService = attachService;
+            _userService = userService;
+            _postService = postService;
         }
         
         [HttpPost]
@@ -48,6 +52,43 @@ namespace ApiDigitalDesign.Controllers
             {
                 return new JsonResult(new { message = ex.Message })
                     { StatusCode = StatusCodes.Status400BadRequest };
+            }
+        }
+        [HttpGet]
+        [Authorize]
+        public async Task<ActionResult> GetPostAttach(Guid postAttachId)
+        {
+            try
+            {
+                var attach = await _postService.GetPostAttachAsync(postAttachId);
+                return File(System.IO.File.ReadAllBytes(attach.FilePath), attach.MimeType);
+            }
+            catch (AttachNotFoundException ex)
+            {
+                return new JsonResult(new { message = ex.Message })
+                    { StatusCode = StatusCodes.Status400BadRequest };
+            }
+            catch
+            {
+                return new JsonResult(new { message = "Server can't process the request" })
+                    { StatusCode = StatusCodes.Status503ServiceUnavailable };
+            }
+        }
+        [HttpGet]
+        public async Task<ActionResult> GetUserAvatar(Guid userId)
+        {
+            try
+            {
+                var attach = await _userService.GetUserAvatar(userId);
+                if (attach != null)
+                    return File(System.IO.File.ReadAllBytes(attach.FilePath), attach.MimeType);
+                else return new JsonResult(new { message = "Avatar not found" })
+                    { StatusCode = StatusCodes.Status404NotFound };
+            }
+            catch (UserNotFoundException ex)
+            {
+                return new JsonResult(new { message = ex.Message })
+                    { StatusCode = StatusCodes.Status404NotFound };
             }
         }
     }

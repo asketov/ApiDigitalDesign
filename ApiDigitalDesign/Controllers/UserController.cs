@@ -8,6 +8,7 @@ using ApiDigitalDesign.Models.UserModels;
 using ApiDigitalDesign.Services;
 using Common.Exceptions.Attach;
 using Common.Exceptions.User;
+using Common.Generics;
 using Common.Statics;
 using DAL.Entities;
 using Microsoft.AspNetCore.Authorization;
@@ -18,7 +19,7 @@ namespace ApiDigitalDesign.Controllers
 {
     [Route("api/[controller]/[action]")]
     [ApiController]
-    public class UserController : ControllerBase
+    public class UserController : BaseController
     {
         private readonly UserService _userService;
         public UserController(UserService userService)
@@ -29,12 +30,11 @@ namespace ApiDigitalDesign.Controllers
         [Authorize]
         public async Task<ActionResult> AddAvatarToUser(MetadataModel model)
         {
-            var userIdString = User.Claims.FirstOrDefault(x => x.Type == Auth.UserClaim)?.Value;
-            if (Guid.TryParse(userIdString, out var userId))
+            if (UserId != default)
             {
                 try
                 {
-                    Guid avatarId = await _userService.AddAvatarToUser(userId, model);
+                    Guid avatarId = await _userService.AddAvatarToUser(UserId, model);
                     return new JsonResult(new {message = $"Server created new Avatar with id:{avatarId}"})
                         { StatusCode = StatusCodes.Status201Created };
                 }
@@ -55,21 +55,6 @@ namespace ApiDigitalDesign.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult> GetUserAvatar(Guid userId)
-        {
-            try
-            {
-                var attach = await _userService.GetUserAvatar(userId);
-                return File(System.IO.File.ReadAllBytes(attach.FilePath), attach.MimeType);
-            }
-            catch(UserNotFoundException ex)
-            {
-                return new JsonResult(new { message = "User not found" })
-                    { StatusCode = StatusCodes.Status404NotFound };
-            }
-        }
-
-        [HttpGet]
         public async Task<ActionResult> DownloadAvatar(Guid userId)
         {
             try
@@ -84,7 +69,7 @@ namespace ApiDigitalDesign.Controllers
             }
             catch (UserNotFoundException ex)
             {
-                return new JsonResult(new { message = "User not found" })
+                return new JsonResult(new { message = ex.Message })
                     { StatusCode = StatusCodes.Status404NotFound };
             }
         }
@@ -112,10 +97,9 @@ namespace ApiDigitalDesign.Controllers
         [Authorize]
         public async Task<ActionResult> GetCurrentUser()
         {
-            var userIdString = User.Claims.FirstOrDefault(x => x.Type == Auth.UserClaim)?.Value;
-            if (Guid.TryParse(userIdString, out var userId))
+            if (UserId != default)
             {
-                var user = await _userService.GetUserModel(userId);
+                var user = await _userService.GetUserModel(UserId);
                 return Ok(user);
             }
             else

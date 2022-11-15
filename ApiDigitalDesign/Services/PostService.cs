@@ -78,10 +78,9 @@ namespace ApiDigitalDesign.Services
                 };
                 foreach (var postAttach in post.PostAttaches)
                 {
-                    var linkToAttach = $"/api/Post/GetPostAttach/?PostAttachId={postAttach.Id}";
+                    var linkToAttach = $"/api/Attach/GetPostAttach/?PostAttachId={postAttach.Id}";
                     getPostModel.LinksToAttaches.Add(linkToAttach);
                 }
-
                 return getPostModel;
             }
             throw new PostNotFoundException("post with such id not found");

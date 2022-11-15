@@ -3,6 +3,7 @@ using ApiDigitalDesign.Models.AuthModels;
 using Common.Configs;
 using Common.Exceptions.Auth;
 using Common.Exceptions.User;
+using Common.Generics;
 using Common.Helpers;
 using Common.Statics;
 using DAL;
@@ -52,12 +53,13 @@ namespace ApiDigitalDesign.Services
         {
             if (!JwtHelper.ValidateToken(_config, refreshToken)) throw new InvalidTokenException("token is invalid");
             var claims = JwtHelper.GetClaimsFromToken(refreshToken);
-            var userId = Guid.Parse(claims.First(x => x.Type == Auth.UserClaim).Value);
+            var userId = claims.GetClaimValueOrDefault<Guid>(Auth.UserClaim);
+            if (userId == default) throw new InvalidTokenException("user with such id not found");
             var user = await _db.Users.FirstOrDefaultAsync(user => user.Id == userId);
             if (user != null)
             {
-                if (claims.FirstOrDefault(x => x.Type == Auth.RefreshClaim)?.Value is String refreshIdString
-                    && Guid.TryParse(refreshIdString, out var refreshId))
+                var refreshId = claims.GetClaimValueOrDefault<Guid>(Auth.RefreshClaim);
+                if (refreshId != default)
                 {
                     var session = await  _sessionService.GetSessionByRefreshToken(refreshId);
                     if (!session.IsActive)

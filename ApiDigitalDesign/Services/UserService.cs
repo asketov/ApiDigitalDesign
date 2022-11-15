@@ -18,6 +18,7 @@ namespace ApiDigitalDesign.Services
     {
         private readonly DataContext _db;
         private readonly IMapper _mapper;
+        private Func<User, string?>? _linkAvatarGenerator { get; set; }
 
         public UserService(DataContext db, IMapper mapper)
         {
@@ -38,8 +39,8 @@ namespace ApiDigitalDesign.Services
             var user = await _db.Users.Include(x => x.Avatar).FirstOrDefaultAsync(x => x.Id == userId);
             if (user != null)
             {
-                var avatar = new Avatar { Author = user, MimeType = model.MimeType, FilePath = path, Name = model.Name, Size = model.Size, Id = Guid.NewGuid() };
-                user.Avatar = avatar;
+                var avatar = new Avatar { Author = user, MimeType = model.MimeType, 
+                    FilePath = path, Name = model.Name, Size = model.Size, Id = Guid.NewGuid() };
                 _db.Avatars.Add(avatar);
                 await _db.SaveChangesAsync();
                 return avatar.Id;

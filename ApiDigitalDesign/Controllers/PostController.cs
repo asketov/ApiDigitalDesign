@@ -17,7 +17,7 @@ namespace ApiDigitalDesign.Controllers
 {
     [Route("api/[controller]/[action]")]
     [ApiController]
-    public class PostController : ControllerBase
+    public class PostController : BaseController
     {
         private readonly PostService _postService;
 
@@ -30,12 +30,11 @@ namespace ApiDigitalDesign.Controllers
         [HttpPost]
         public async Task<ActionResult> CreatePost(CreatePostModel model)
         {
-            var userIdString = User.Claims.FirstOrDefault(x => x.Type == Auth.UserClaim)?.Value;
-            if (Guid.TryParse(userIdString, out var userId))
+            if (UserId != default)
             {
                 try
                 {
-                    var postId = await _postService.CreatePostAsync(model, userId);
+                    var postId = await _postService.CreatePostAsync(model, UserId);
                     return new JsonResult(new {message = $"Server created new Post with id:{postId}"})
                         {StatusCode = StatusCodes.Status200OK};
                 }
@@ -59,26 +58,6 @@ namespace ApiDigitalDesign.Controllers
                 return new JsonResult(new { message = "Unauthorized" })
                     { StatusCode = StatusCodes.Status401Unauthorized };
         }
-        [HttpGet]
-        [Authorize]
-        public async Task<ActionResult> GetPostAttach(Guid postAttachId)
-        {
-            try
-            {
-                var attach = await _postService.GetPostAttachAsync(postAttachId);
-                return File(System.IO.File.ReadAllBytes(attach.FilePath), attach.MimeType);
-            }
-            catch (AttachNotFoundException ex)
-            {
-                return new JsonResult(new {message = ex.Message})
-                    {StatusCode = StatusCodes.Status400BadRequest};
-            }
-            catch
-            {
-                return new JsonResult(new { message = "Server can't process the request" })
-                    { StatusCode = StatusCodes.Status503ServiceUnavailable };
-            }
-        }
 
         [HttpGet]
         [Authorize]
@@ -100,12 +79,11 @@ namespace ApiDigitalDesign.Controllers
         [Authorize]
         public async Task<ActionResult> CreateComment(CreateCommentModel model)
         {
-            var userIdString = User.Claims.FirstOrDefault(x => x.Type == Auth.UserClaim)?.Value;
-            if (Guid.TryParse(userIdString, out var userId))
+            if (UserId != default)
             {
                 try
                 {
-                    var commendId = await _postService.CreateCommentAsync(model, userId);
+                    var commendId = await _postService.CreateCommentAsync(model, UserId);
                     return new JsonResult(new {message = $"Server created new Comment with id:{commendId}"})
                         {StatusCode = StatusCodes.Status200OK};
                 }

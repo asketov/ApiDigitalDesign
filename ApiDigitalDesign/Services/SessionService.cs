@@ -44,7 +44,7 @@ namespace ApiDigitalDesign.Services
         /// </summary>
         /// <param name="id"></param>
         /// <returns>UserSession</returns>
-        /// <exception cref="UserNotFoundException"></exception>
+        /// <exception cref="SessionNotFoundException"></exception>
         public async Task<UserSession> GetSessionById(Guid id)
         {
             var session = await _db.UserSessions.FirstOrDefaultAsync(x => x.Id == id);

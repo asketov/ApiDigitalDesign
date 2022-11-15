@@ -67,17 +67,17 @@ namespace ApiDigitalDesign.Services
         /// <summary>
         /// Static function for create attach in folder attaches from tempFolder by tempId.
         /// </summary>
-        /// <param name="TempId"></param>
+        /// <param name="tempId"></param>
         /// <returns>Path to attach in folder attaches.</returns>
         /// <exception cref="FileNotExistException">File in tempDirectory not found.</exception>
-        public static string CopyTempFileToAttaches(Guid TempId)
+        public static string CopyTempFileToAttaches(Guid tempId)
         {
-            var tempFi = new FileInfo(Path.Combine(Path.GetTempPath(), TempId.ToString()));
+            var tempFi = new FileInfo(Path.Combine(Path.GetTempPath(), tempId.ToString()));
             if (!tempFi.Exists) throw new FileNotExistException("File in tempDirectory not found");
-            var path = Path.Combine(Directory.GetCurrentDirectory(), "attaches", TempId.ToString());
+            var path = Path.Combine(Directory.GetCurrentDirectory(), "attaches", tempId.ToString());
             var destFi = new FileInfo(path);
             if (destFi.Directory != null && !destFi.Directory.Exists) destFi.Directory.Create();
-            System.IO.File.Copy(tempFi.FullName, path, true);
+            File.Move(tempFi.FullName, path);
             return path;
         }
         /// <summary>
