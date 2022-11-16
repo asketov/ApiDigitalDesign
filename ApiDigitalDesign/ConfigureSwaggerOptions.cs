@@ -43,6 +43,8 @@ namespace ApiDigitalDesign
                     new List<string>()
                 }
             });
+            options.SwaggerDoc("Auth", new OpenApiInfo { Title = "Auth" });
+            options.SwaggerDoc("Api", new OpenApiInfo { Title = "Api" });
             var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
             options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
         }

@@ -22,9 +22,14 @@ namespace ApiDigitalDesign.Controllers
     public class UserController : BaseController
     {
         private readonly UserService _userService;
-        public UserController(UserService userService)
+        public UserController(UserService userService, LinkGeneratorService links)
         {
             _userService = userService;
+            links.LinkAvatarGenerator = x =>
+                Url.ControllerAction<AttachController>(nameof(AttachController.GetUserAvatar), new
+                {
+                    userId = x.Id
+                });
         }
         [HttpPost]
         [Authorize]
@@ -99,8 +104,8 @@ namespace ApiDigitalDesign.Controllers
         {
             if (UserId != default)
             {
-                var user = await _userService.GetUserModel(UserId);
-                return Ok(user);
+                var model = await _userService.GetUserModelAsync(UserId);
+                return Ok(model);
             }
             else
                 return new JsonResult(new { message = "you are not authorized" })

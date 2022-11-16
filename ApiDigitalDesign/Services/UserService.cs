@@ -7,6 +7,7 @@ using Common.Exceptions.User;
 using Common.Helpers;
 using DAL;
 using DAL.Entities;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 
 namespace ApiDigitalDesign.Services
@@ -18,7 +19,11 @@ namespace ApiDigitalDesign.Services
     {
         private readonly DataContext _db;
         private readonly IMapper _mapper;
-        private Func<User, string?>? _linkAvatarGenerator { get; set; }
+        private Func<Guid, string?>? _linkAvatarGenerator;
+        public void SetLinkGenerator(Func<Guid, string?> linkAvatarGenerator)
+        {
+            _linkAvatarGenerator = linkAvatarGenerator;
+        }
 
         public UserService(DataContext db, IMapper mapper)
         {
@@ -96,10 +101,10 @@ namespace ApiDigitalDesign.Services
         /// <param name="id"></param>
         /// <returns><see cref="UserModel"/></returns>
         /// <exception cref="UserNotFoundException"></exception>
-        public async Task<UserModel> GetUserModel(Guid id)
+        public async Task<UserAvatarModel> GetUserModelAsync(Guid id)
         {
-            var user = await GetUserByIdAsync(id);
-            return _mapper.Map<UserModel>(user);
+           var k = _mapper.Map<User, UserAvatarModel>(await GetUserByIdAsync(id));
+           return k;
         }
 
         /// <summary>
@@ -107,13 +112,13 @@ namespace ApiDigitalDesign.Services
         /// </summary>
         /// <returns></returns>
         /// <exception cref="UserNotFoundException"></exception>
-        public async Task<List<UserModel>> GetUsersAsync()
+        public async Task<List<UserAvatarModel>> GetUsersAsync()
         {
-            var users = await _db.Users.AsNoTracking()
-                .ProjectTo<UserModel>(_mapper.ConfigurationProvider).ToListAsync();
-            if (users == null)
-                throw new UserNotFoundException("no user exists");
-            return users;
+            return await _db.Users.AsNoTracking()
+                .Include(x => x.Avatar)
+                .Include(x => x.Posts)
+                .Select(x => _mapper.Map<UserAvatarModel>(x))
+                .ToListAsync();
         }
         /// <summary>
         /// 

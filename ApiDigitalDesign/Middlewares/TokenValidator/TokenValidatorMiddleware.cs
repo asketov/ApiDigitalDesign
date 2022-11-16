@@ -27,12 +27,15 @@ namespace ApiDigitalDesign.Middlewares.TokenValidator
             {
                 var isOk = true;
                 var sessionId = context.User.Claims.GetClaimValueOrDefault<Guid>(Auth.SessionClaim);
-                var session = await sessionService.GetSessionById(sessionId);
-                if (!session.IsActive)
+                if (sessionId != default)
                 {
-                    isOk = false;
-                    context.Response.Clear();
-                    context.Response.StatusCode = 401;
+                    var session = await sessionService.GetSessionById(sessionId);
+                    if (!session.IsActive)
+                    {
+                        isOk = false;
+                        context.Response.Clear();
+                        context.Response.StatusCode = 401;
+                    }
                 }
                 if (isOk)
                 {

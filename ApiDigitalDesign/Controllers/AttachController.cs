@@ -9,6 +9,7 @@ namespace ApiDigitalDesign.Controllers
 {
     [Route("api/[controller]/[action]")]
     [ApiController]
+    [ApiExplorerSettings(GroupName = "Api")]
     public class AttachController : BaseController
     {
         private readonly AttachService _attachService;

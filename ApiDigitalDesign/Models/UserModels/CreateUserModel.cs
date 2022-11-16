@@ -6,7 +6,7 @@ using DAL.Entities;
 
 namespace ApiDigitalDesign.Models.UserModels
 {
-    public class CreateUserModel : IMapWith<User>
+    public class CreateUserModel
     {
         [Required]
         [MaxLength(250)]
@@ -27,13 +27,6 @@ namespace ApiDigitalDesign.Models.UserModels
         [Required]
         public DateTimeOffset BirthDate { get; set; }
 
-        public void Mapping(Profile profile)
-        {
-            profile.CreateMap<CreateUserModel, User>()
-                .ForMember(d => d.Id, m => m.MapFrom(s => Guid.NewGuid()))
-                .ForMember(d => d.PasswordHash, m => m.MapFrom(s => HashHelper.GetHash(s.Password)))
-                .ForMember(d => d.BirthDate, m => m.MapFrom(s => s.BirthDate.UtcDateTime))
-                ;
-        }
+       
     }
 }

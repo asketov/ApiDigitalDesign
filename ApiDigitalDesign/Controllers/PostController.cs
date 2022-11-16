@@ -1,22 +1,16 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
-using ApiDigitalDesign.Models.AttachModels;
 using ApiDigitalDesign.Models.PostModels;
 using ApiDigitalDesign.Services;
 using Common.Exceptions.Attach;
 using Common.Exceptions.Posts;
 using Common.Exceptions.User;
-using Common.Statics;
 
 namespace ApiDigitalDesign.Controllers
 {
     [Route("api/[controller]/[action]")]
     [ApiController]
+    [ApiExplorerSettings(GroupName = "Api")]
     public class PostController : BaseController
     {
         private readonly PostService _postService;
@@ -48,11 +42,11 @@ namespace ApiDigitalDesign.Controllers
                     return new JsonResult(new { message = ex.Message })
                         {StatusCode = StatusCodes.Status400BadRequest};
                 }
-                //catch
-                //{
-                //    return new JsonResult(new { message = "Server can't process the request" })
-                //        { StatusCode = StatusCodes.Status503ServiceUnavailable };
-                //}
+                catch
+                {
+                    return new JsonResult(new { message = "Server can't process the request" })
+                    { StatusCode = StatusCodes.Status503ServiceUnavailable };
+                }
             }
             else
                 return new JsonResult(new { message = "Unauthorized" })

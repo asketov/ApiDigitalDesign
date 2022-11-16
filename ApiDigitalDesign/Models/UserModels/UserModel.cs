@@ -10,15 +10,10 @@ using DAL.Entities;
 
 namespace ApiDigitalDesign.Models.UserModels
 {
-    public class UserModel : IMapWith<User>
+    public class UserModel
     {
         public string Name { get; set; } = null!;
         public string Email { get; set; } = null!;
         public DateTimeOffset BirthDate { get; set; }
-
-        public void Mapping(Profile profile)
-        {
-            profile.CreateMap<User, UserModel>();
-        }
     }
 }

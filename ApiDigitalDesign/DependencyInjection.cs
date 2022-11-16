@@ -17,6 +17,7 @@ namespace ApiDigitalDesign
             services.AddScoped<SessionService>();
             services.AddScoped<AttachService>();
             services.AddScoped<PostService>();
+            services.AddScoped<LinkGeneratorService>();
             return services;
         }
     }

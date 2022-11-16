@@ -9,15 +9,12 @@ using DAL.Entities;
 
 namespace ApiDigitalDesign.Models.PostModels
 {
-    public class CommentModel : IMapWith<Comment>
+    public class CommentModel
     {
         public Guid Id { get; set; }
         public DateTimeOffset Created { get; set; }
         public string Content { get; set; } = null!;
         public Guid AuthorId { get; set; }
-        public void Mapping(Profile profile)
-        {
-            profile.CreateMap<Comment, CommentModel>().ForMember(s => s.AuthorId, f => f.MapFrom(k => k.Author.Id));
-        }
+        
     }
 }

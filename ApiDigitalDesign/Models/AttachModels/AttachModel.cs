@@ -11,7 +11,7 @@ using DAL.Entities;
 
 namespace ApiDigitalDesign.Models.AttachModels
 {
-    public class AttachModel : IMapWith<Avatar>, IMapWith<Attach>
+    public class AttachModel
     {
         public string Name { get; set; } = null!;
         public string MimeType { get; set; } = null!;
