@@ -19,11 +19,6 @@ namespace ApiDigitalDesign.Services
     {
         private readonly DataContext _db;
         private readonly IMapper _mapper;
-        private Func<Guid, string?>? _linkAvatarGenerator;
-        public void SetLinkGenerator(Func<Guid, string?> linkAvatarGenerator)
-        {
-            _linkAvatarGenerator = linkAvatarGenerator;
-        }
 
         public UserService(DataContext db, IMapper mapper)
         {
@@ -41,7 +36,7 @@ namespace ApiDigitalDesign.Services
         public async Task<Guid> AddAvatarToUser(Guid userId, MetadataModel model)
         {
             var path = AttachService.CopyTempFileToAttaches(model.TempId);
-            var user = await _db.Users.Include(x => x.Avatar).FirstOrDefaultAsync(x => x.Id == userId);
+            var user = await GetUserByIdAsync(userId);
             if (user != null)
             {
                 var avatar = new Avatar { Author = user, MimeType = model.MimeType, 
@@ -60,7 +55,7 @@ namespace ApiDigitalDesign.Services
         /// <param name="userId"></param>
         /// <returns></returns>
         /// <exception cref="UserNotFoundException"></exception>
-        public async Task<AttachModel> GetUserAvatar(Guid userId)
+        public async Task<AttachModel?> GetUserAvatar(Guid userId)
         {
             var user = await GetUserByIdAsync(userId);
             var attach = _mapper.Map<AttachModel>(user.Avatar);

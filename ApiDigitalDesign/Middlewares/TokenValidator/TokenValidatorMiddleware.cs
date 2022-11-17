@@ -7,10 +7,12 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using ApiDigitalDesign.Services;
+using Common.Exceptions.Auth;
 using Common.Exceptions.Session;
 using Common.Exceptions.User;
 using Common.Generics;
 using Common.Statics;
+using DAL.Entities;
 
 namespace ApiDigitalDesign.Middlewares.TokenValidator
 {
@@ -21,31 +23,41 @@ namespace ApiDigitalDesign.Middlewares.TokenValidator
         public TokenValidatorMiddleware(RequestDelegate next) =>
             _next = next;
 
-        public async Task InvokeAsync(HttpContext context, SessionService sessionService)
+        public async Task InvokeAsync(HttpContext context, SessionService sessionService, UserService userService)
         {
-            try
+            if (!context.User.Identity!.IsAuthenticated) await _next(context);
+            else
             {
-                var isOk = true;
-                var sessionId = context.User.Claims.GetClaimValueOrDefault<Guid>(Auth.SessionClaim);
-                if (sessionId != default)
+                try
                 {
-                    var session = await sessionService.GetSessionById(sessionId);
-                    if (!session.IsActive)
+                    var isOk = true;
+                    var sessionId = context.User.Claims.GetClaimValueOrDefault<Guid>(Auth.SessionClaim);
+                    var userId = context.User.Claims.GetClaimValueOrDefault<Guid>(Auth.UserClaim);
+                    if (userId == default) throw new InvalidTokenException("invalid userId");
+                    if (sessionId != default)
                     {
-                        isOk = false;
-                        context.Response.Clear();
-                        context.Response.StatusCode = 401;
+                        var user = await userService.GetUserByIdAsync(userId);
+                        var session = await sessionService.GetSessionById(sessionId);
+                        if (!session.IsActive)
+                        {
+                            isOk = false;
+                            context.Response.Clear();
+                            context.Response.StatusCode = 401;
+                        }
+                    }
+
+                    if (isOk)
+                    {
+                        await _next(context);
                     }
                 }
-                if (isOk)
+                catch (Exception ex) when (ex is InvalidTokenException ||
+                                           ex is UserNotFoundException ||
+                                           ex is SessionNotFoundException)
                 {
-                    await _next(context);
+                    context.Response.Clear();
+                    context.Response.StatusCode = 401;
                 }
-            }
-            catch(SessionNotFoundException)
-            {
-                context.Response.Clear();
-                context.Response.StatusCode = 401;
             }
         }
 

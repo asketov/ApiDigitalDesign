@@ -112,5 +112,12 @@ namespace ApiDigitalDesign.Controllers
                     { StatusCode = StatusCodes.Status401Unauthorized };
 
         }
+
+        [HttpGet]
+        public async Task<ActionResult<List<UserAvatarModel>>> GetAllUsers()
+        {
+            var users = await _userService.GetUsersAsync();
+            return Ok(users);
+        }
     }
 }

@@ -16,11 +16,6 @@ namespace ApiDigitalDesign.Models.AttachModels
         public string Name { get; set; } = null!;
         public string MimeType { get; set; } = null!;
         public string FilePath { get; set; } = null!;
-        public void Mapping(Profile profile)
-        {
-            profile.CreateMap<DAL.Entities.Avatar, Models.AttachModels.AttachModel>();
-            profile.CreateMap<DAL.Entities.Attach, Models.AttachModels.AttachModel>();
-
-        }
+       
     }
 }

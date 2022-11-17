@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ApiDigitalDesign.Models.AttachModels;
+﻿using ApiDigitalDesign.Models.AttachModels;
 using ApiDigitalDesign.Models.PostModels;
-using ApiDigitalDesign.Models.UserModels;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Common.Exceptions.Attach;
@@ -14,7 +8,7 @@ using Common.Exceptions.User;
 using DAL;
 using DAL.Entities;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.VisualBasic;
+
 
 namespace ApiDigitalDesign.Services
 {
@@ -32,30 +26,18 @@ namespace ApiDigitalDesign.Services
         /// <summary>
         /// Create Post with attaches.(need refactor)
         /// </summary>
-        /// <param name="model"></param>
-        /// <param name="userId"></param>
+        /// <param name="request"></param>
         /// <returns>Guid id created post.</returns>
-        /// <exception cref="UserNotFoundException"></exception>
         /// <exception cref="FileNotExistException">one of the files don't exist</exception>
-        public async Task<Guid> CreatePostAsync(CreatePostModel model, Guid userId)
+        public async Task<Guid> CreatePostAsync(CreatePostRequest request)
         {
-            var post = new Post();
-            post.PostAttaches = new List<PostAttach>();
-            post.Id = Guid.NewGuid();
-            var user = await _userService.GetUserByIdAsync(userId);
-            foreach (var attach in model.Attaches)
+            var model = _mapper.Map<CreatePostModel>(request);
+            model.Attaches.ForEach(q =>
             {
-                var path = AttachService.CopyTempFileToAttaches(attach.TempId);
-                var postAttach = new PostAttach()
-                {
-                    Id = Guid.NewGuid(), FilePath = path, MimeType = attach.MimeType, Name = attach.Name,
-                    Size = attach.Size, Post = post, Author = user, User = user
-                };
-                post.PostAttaches.Add(postAttach);
-            }
-            post.Created = model.Created.UtcDateTime;
-            post.Title = model.Title;
-            post.Author = user;
+                q.FilePath = AttachService.CopyTempFileToAttaches(q.TempId);
+                q.AuthorId = model.AuthorId;
+            });
+            var post = _mapper.Map<Post>(model);
             var t = _db.Posts.Add(post);
             await _db.SaveChangesAsync();
             return t.Entity.Id;
@@ -68,19 +50,11 @@ namespace ApiDigitalDesign.Services
         /// <exception cref="PostNotFoundException"></exception>
         public async Task<PostModel> GetPostModel(Guid postId)
         {
-            var post = await _db.Posts.Include(x=>x.PostAttaches).AsNoTracking()
+            var post = await _db.Posts.Include(x => x.Author).Include(x=>x.PostAttaches).AsNoTracking()
                 .FirstOrDefaultAsync(p => p.Id == postId);
             if (post != null)
             {
-                var getPostModel = new PostModel()
-                {
-                    Created = post.Created, Title = post.Title, AuthorId = post.UserId
-                };
-                foreach (var postAttach in post.PostAttaches)
-                {
-                    var linkToAttach = $"/api/Attach/GetPostAttach/?PostAttachId={postAttach.Id}";
-                    getPostModel.LinksToAttaches.Add(linkToAttach);
-                }
+                var getPostModel = _mapper.Map<PostModel>(post);
                 return getPostModel;
             }
             throw new PostNotFoundException("post with such id not found");

@@ -76,14 +76,15 @@ namespace ApiDigitalDesign.Controllers
             }
         }
         [HttpGet]
-        public async Task<ActionResult> GetUserAvatar(Guid userId)
+        [Authorize]
+        public async Task<ActionResult> GetUserAvatar()
         {
             try
             {
-                var attach = await _userService.GetUserAvatar(userId);
+                var attach = await _userService.GetUserAvatar(UserId);
                 if (attach != null)
                     return File(System.IO.File.ReadAllBytes(attach.FilePath), attach.MimeType);
-                else return new JsonResult(new { message = "Avatar not found" })
+                return new JsonResult(new { message = "Avatar not found" })
                     { StatusCode = StatusCodes.Status404NotFound };
             }
             catch (UserNotFoundException ex)
