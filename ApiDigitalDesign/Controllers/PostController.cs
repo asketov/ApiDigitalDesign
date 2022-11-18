@@ -20,10 +20,11 @@ namespace ApiDigitalDesign.Controllers
         public PostController(PostService postService, LinkGeneratorService _links)
         {
             _postService = postService;
-            _links.LinkContentGenerator = x => Url.ControllerAction<AttachController>(nameof(AttachController.GetPostAttach), new
-            {
-                postAttachId = x.Post.Id
+            _links.LinkContentGenerator = x => Url.ControllerAction<AttachController>(nameof(AttachController.GetPostAttach), 
+            new {
+                postAttachId = x.Id
             });
+
         }
 
         [Authorize]
@@ -42,11 +43,11 @@ namespace ApiDigitalDesign.Controllers
                 return new JsonResult(new { message = ex.Message })
                     {StatusCode = StatusCodes.Status400BadRequest};
             }
-            //catch
-            //{
-            //    return new JsonResult(new { message = "Server can't process the request" }) 
-            //        { StatusCode = StatusCodes.Status503ServiceUnavailable };
-            //}
+            catch
+            {
+                return new JsonResult(new { message = "Server can't process the request" })
+                { StatusCode = StatusCodes.Status503ServiceUnavailable };
+            }
         }
 
         [HttpGet]
@@ -67,18 +68,14 @@ namespace ApiDigitalDesign.Controllers
 
         [HttpPost]
         [Authorize]
-        public async Task<ActionResult> CreateComment(CreateCommentModel model)
+        public async Task<ActionResult> CreateComment(CreateCommentRequest model)
         {
             try
             {
-                var commendId = await _postService.CreateCommentAsync(model, UserId);
+                model.AuthorId = UserId;
+                var commendId = await _postService.CreateCommentAsync(model);
                 return new JsonResult(new {message = $"Server created new Comment with id:{commendId}"})
                     {StatusCode = StatusCodes.Status200OK};
-            }
-            catch (UserNotFoundException ex)
-            {
-                return new JsonResult(new {message = ex.Message})
-                    {StatusCode = StatusCodes.Status401Unauthorized};
             }
             catch (PostNotFoundException ex)
             {

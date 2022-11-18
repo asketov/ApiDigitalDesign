@@ -56,7 +56,6 @@ namespace ApiDigitalDesign.Controllers
             }
         }
         [HttpGet]
-        [Authorize]
         public async Task<ActionResult> GetPostAttach(Guid postAttachId)
         {
             try
@@ -87,7 +86,7 @@ namespace ApiDigitalDesign.Controllers
                 return new JsonResult(new { message = "Avatar not found" })
                     { StatusCode = StatusCodes.Status404NotFound };
             }
-            catch (UserNotFoundException ex)
+            catch (AvatarNotFoundException ex)
             {
                 return new JsonResult(new { message = ex.Message })
                     { StatusCode = StatusCodes.Status404NotFound };

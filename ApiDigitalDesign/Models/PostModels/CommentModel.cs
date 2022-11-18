@@ -15,6 +15,7 @@ namespace ApiDigitalDesign.Models.PostModels
         public DateTimeOffset Created { get; set; }
         public string Content { get; set; } = null!;
         public Guid AuthorId { get; set; }
+        public Guid PostId { get; set; }
         
     }
 }

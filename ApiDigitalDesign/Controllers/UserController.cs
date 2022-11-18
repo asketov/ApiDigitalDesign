@@ -35,28 +35,18 @@ namespace ApiDigitalDesign.Controllers
         [Authorize]
         public async Task<ActionResult> AddAvatarToUser(MetadataModel model)
         {
-            if (UserId != default)
+            try
             {
-                try
-                {
-                    Guid avatarId = await _userService.AddAvatarToUser(UserId, model);
-                    return new JsonResult(new {message = $"Server created new Avatar with id:{avatarId}"})
-                        { StatusCode = StatusCodes.Status201Created };
-                }
-                catch (UserNotFoundException)
-                {
-                    return new JsonResult(new {message = "User not found"})
-                        {StatusCode = StatusCodes.Status404NotFound};
-                }
-                catch (FileNotExistException)
-                {
-                    return new JsonResult(new { message = "File not exist in tempDirectory" })
-                        { StatusCode = StatusCodes.Status400BadRequest };
-                }
+                Guid avatarId = await _userService.AddAvatarToUser(UserId, model);
+                return new JsonResult(new {message = $"Server created new Avatar with id:{avatarId}"})
+                    { StatusCode = StatusCodes.Status201Created };
             }
-            else
-                return new JsonResult(new { message = "Unauthorized" })
-                    { StatusCode = StatusCodes.Status401Unauthorized };
+            catch (FileNotExistException)
+            {
+                return new JsonResult(new { message = "File not exist in tempDirectory" })
+                    { StatusCode = StatusCodes.Status400BadRequest };
+            }
+                
         }
 
         [HttpGet]
@@ -102,15 +92,8 @@ namespace ApiDigitalDesign.Controllers
         [Authorize]
         public async Task<ActionResult> GetCurrentUser()
         {
-            if (UserId != default)
-            {
-                var model = await _userService.GetUserModelAsync(UserId);
-                return Ok(model);
-            }
-            else
-                return new JsonResult(new { message = "you are not authorized" })
-                    { StatusCode = StatusCodes.Status401Unauthorized };
-
+            var model = await _userService.GetUserModelAsync(UserId);
+            return Ok(model);
         }
 
         [HttpGet]

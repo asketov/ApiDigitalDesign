@@ -75,19 +75,13 @@ namespace ApiDigitalDesign.Services
         /// <summary>
         /// Returns id created comment
         /// </summary>
-        /// <param name="model"></param>
-        /// <param name="userId"></param>
+        /// <param name="request"></param>
         /// <exception cref="PostNotFoundException"></exception>
-        /// <exception cref="UserNotFoundException"></exception>
-        public async Task<Guid> CreateCommentAsync(CreateCommentModel model, Guid userId)
+        public async Task<Guid> CreateCommentAsync(CreateCommentRequest request)
         {
-            var user = await _userService.GetUserByIdAsync(userId);
+            var model = _mapper.Map<CreateCommentModel>(request);
             var post = await GetClearPostAsync(model.PostId);
-            var comm = new Comment()
-            {
-                Author = user, Content = model.Content, Created = DateTimeOffset.UtcNow, Id = Guid.NewGuid(),
-                Post = post
-            };
+            var comm = _mapper.Map<Comment>(model);
             var t = _db.Comments.Add(comm);
             await _db.SaveChangesAsync();
             return t.Entity.Id;

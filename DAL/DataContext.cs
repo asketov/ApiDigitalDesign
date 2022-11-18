@@ -18,6 +18,8 @@ namespace DAL
             builder.ApplyConfiguration(new UserSessionConfiguration());
             builder.ApplyConfiguration(new AvatarConfiguration());
             builder.ApplyConfiguration(new PostAttachConfiguration());
+            builder.ApplyConfiguration(new CommentLikeConfiguration());
+            builder.ApplyConfiguration(new PostLikeConfiguration());
             base.OnModelCreating(builder);
         }
 
@@ -28,5 +30,8 @@ namespace DAL
         public DbSet<Post> Posts => Set<Post>();
         public DbSet<Comment> Comments => Set<Comment>();
         public DbSet<PostAttach> PostAttaches => Set<PostAttach>();
+        public DbSet<Like> Likes => Set<Like>();
+        public DbSet<PostLike> PostLikes => Set<PostLike>();
+        public DbSet<CommentLike> CommentLikes => Set<CommentLike>();
     }
 }

@@ -40,7 +40,7 @@ namespace ApiDigitalDesign.Services
             if (user != null)
             {
                 var avatar = new Avatar { Author = user, MimeType = model.MimeType, 
-                    FilePath = path, Name = model.Name, Size = model.Size, Id = Guid.NewGuid() };
+                    FilePath = path, Name = model.Name, Size = model.Size };
                 _db.Avatars.Add(avatar);
                 await _db.SaveChangesAsync();
                 return avatar.Id;
@@ -54,11 +54,12 @@ namespace ApiDigitalDesign.Services
         /// </summary>
         /// <param name="userId"></param>
         /// <returns></returns>
-        /// <exception cref="UserNotFoundException"></exception>
+        /// <exception cref="AvatarNotFoundException"></exception>
         public async Task<AttachModel?> GetUserAvatar(Guid userId)
         {
-            var user = await GetUserByIdAsync(userId);
-            var attach = _mapper.Map<AttachModel>(user.Avatar);
+            var avatar = await _db.Avatars.FirstOrDefaultAsync(u => u.UserId == userId);
+            if (avatar == null) throw new AvatarNotFoundException("avatar not exist");
+            var attach = _mapper.Map<AttachModel>(avatar);
             return attach;
         }
         /// <summary>

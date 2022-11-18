@@ -15,20 +15,23 @@ namespace ApiDigitalDesign.AutoMapper.MapperProfiles
     {
         public PostProfile()
         {
-            CreateMap<Comment, CommentModel>().ForMember(s => s.AuthorId, f => f.MapFrom(k => k.Author.Id));
-            CreateMap<Post, PostModel>().ForMember(s => s.AuthorId, f => f.MapFrom(k => k.Author.Id))
+            CreateMap<Comment, CommentModel>()
+                .ForMember(s => s.AuthorId, f => f.MapFrom(k => k.Author.Id));
+            CreateMap<Post, PostModel>()
+                .ForMember(s => s.AuthorId, f => f.MapFrom(k => k.Author.Id))
                 .ForMember(d => d.LinksToAttaches, m => m.MapFrom(d => d.PostAttaches)); 
-            CreateMap<PostAttach, AttachLinkModel>().AfterMap<PostAttachMapperAction>();
+            CreateMap<PostAttach, AttachLinkModel>()
+                .AfterMap<PostAttachMapperAction>();
             CreateMap<PostAttach, AttachModel>();
             CreateMap<CreatePostRequest, CreatePostModel>();
             CreateMap<MetadataModel, MetadataPathModel>();
             CreateMap<MetadataPathModel, PostAttach>();
             CreateMap<CreatePostModel, Post>()
                 .ForMember(d => d.PostAttaches, m => m.MapFrom(s => s.Attaches))
-                .ForMember(d => d.Created, m => m.MapFrom(s => DateTime.UtcNow))
-                .ForMember(d => d.Id, s => s.MapFrom(s => Guid.NewGuid()));
-
-
+                .ForMember(d => d.Created, m => m.MapFrom(s => DateTime.UtcNow));
+            CreateMap<CreateCommentRequest, CreateCommentModel>();
+            CreateMap<CreateCommentModel, Comment>()
+                .ForMember(d => d.Created, m => m.MapFrom(s => DateTime.UtcNow));
         }
     }
 }

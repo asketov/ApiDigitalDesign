@@ -18,6 +18,7 @@ namespace ApiDigitalDesign
             services.AddScoped<AttachService>();
             services.AddScoped<PostService>();
             services.AddScoped<LinkGeneratorService>();
+            services.AddScoped<LikeService>();
             return services;
         }
     }

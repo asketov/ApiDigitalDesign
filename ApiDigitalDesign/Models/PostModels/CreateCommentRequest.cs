@@ -7,12 +7,13 @@ using System.Threading.Tasks;
 
 namespace ApiDigitalDesign.Models.PostModels
 {
-    public class CreateCommentModel
+    public class CreateCommentRequest
     {
+        [Required]
         public string Content { get; set; } = null!;
+        [Required]
         public Guid PostId { get; set; }
-        public Guid AuthorId { get; set; }
-        public Guid Id { get; set; }
-        
+        public Guid? AuthorId { get; set; }
+        public Guid? Id { get; set; }
     }
 }

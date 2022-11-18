@@ -16,5 +16,6 @@ namespace ApiDigitalDesign.Models.PostModels
         [MaxLength(2000)]
         public string? Title { get; set; } = null!;
         public Guid? AuthorId { get; set; }
+        public Guid? Id { get; set; }
     }
 }
