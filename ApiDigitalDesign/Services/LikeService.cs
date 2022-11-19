@@ -23,9 +23,19 @@ namespace ApiDigitalDesign.Services
         {
             var likeModel = new CommentLike()
             {
-                Created = DateTime.UtcNow, AuthorId = AuthorId
+                Created = DateTime.UtcNow, AuthorId = AuthorId, CommentId = CommentId
             };
             _db.CommentLikes.Add(likeModel);
+            await _db.SaveChangesAsync();
+        }
+        public async Task AddLikeToPost(Guid PostId, Guid AuthorId)
+        {
+            var likeModel = new PostLike()
+            {
+                Created = DateTime.UtcNow,
+                AuthorId = AuthorId, PostId = PostId
+            };
+            _db.PostLikes.Add(likeModel);
             await _db.SaveChangesAsync();
         }
     }

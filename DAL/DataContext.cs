@@ -20,6 +20,7 @@ namespace DAL
             builder.ApplyConfiguration(new PostAttachConfiguration());
             builder.ApplyConfiguration(new CommentLikeConfiguration());
             builder.ApplyConfiguration(new PostLikeConfiguration());
+            builder.ApplyConfiguration(new SubscribeConfiguration());
             base.OnModelCreating(builder);
         }
 
@@ -33,5 +34,6 @@ namespace DAL
         public DbSet<Like> Likes => Set<Like>();
         public DbSet<PostLike> PostLikes => Set<PostLike>();
         public DbSet<CommentLike> CommentLikes => Set<CommentLike>();
+        public DbSet<Subscribe> Subscribes => Set<Subscribe>();
     }
 }

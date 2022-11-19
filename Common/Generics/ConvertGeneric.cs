@@ -14,7 +14,7 @@ namespace Common.Generics
             try
             {
                 var convert = TypeDescriptor.GetConverter(typeof(T));
-                if (convert != null && convert.ConvertFromString(str) is T res)
+                if (convert.ConvertFromString(str) is T res)
                 {
                     return res;
                 }

@@ -9,5 +9,7 @@ namespace DAL.Entities
     public class PostLike : Like
     {
         public virtual Post Post { get; set; } = null!;
+        public Guid PostId { get; set; }
+
     }
 }

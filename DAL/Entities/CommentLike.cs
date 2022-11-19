@@ -9,5 +9,6 @@ namespace DAL.Entities
     public class CommentLike : Like
     {
         public virtual Comment Comment { get; set; } = null!; 
+        public Guid CommentId { get; set; }
     }
 }

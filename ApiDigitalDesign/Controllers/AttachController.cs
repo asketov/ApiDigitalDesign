@@ -42,6 +42,7 @@ namespace ApiDigitalDesign.Controllers
             }
         }
         [HttpGet]
+        [Authorize]
         public async Task<ActionResult> GetAttach(Guid attachId)
         {
             try

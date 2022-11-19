@@ -7,6 +7,7 @@ using Common.Exceptions.Posts;
 using Common.Exceptions.User;
 using Common.Generics;
 using DAL.Entities;
+using System.ComponentModel.Design;
 
 namespace ApiDigitalDesign.Controllers
 {
@@ -16,10 +17,13 @@ namespace ApiDigitalDesign.Controllers
     public class PostController : BaseController
     {
         private readonly PostService _postService;
+        private readonly LikeService _likeService;
 
-        public PostController(PostService postService, LinkGeneratorService _links)
+
+        public PostController(PostService postService, LikeService likeService, LinkGeneratorService _links)
         {
             _postService = postService;
+            _likeService = likeService;
             _links.LinkContentGenerator = x => Url.ControllerAction<AttachController>(nameof(AttachController.GetPostAttach), 
             new {
                 postAttachId = x.Id
@@ -102,6 +106,21 @@ namespace ApiDigitalDesign.Controllers
                 return new JsonResult(new { message = ex.Message })
                     { StatusCode = StatusCodes.Status404NotFound };
             }
+        }
+
+        [HttpPost]
+        [Authorize]
+        public async Task AddLikeToComment(Guid commentId)
+        {
+           await _likeService.AddLikeToComment(commentId, UserId);
+        }
+
+        [HttpPost]
+        [Authorize]
+        public async Task AddLikeToPost(Guid postId)
+        {
+            await _likeService.AddLikeToPost(postId, UserId);
+
         }
     }
 }
