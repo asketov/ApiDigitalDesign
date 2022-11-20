@@ -1,5 +1,7 @@
 ﻿using ApiDigitalDesign.Models.AuthModels;
+using ApiDigitalDesign.Models.UserModels;
 using ApiDigitalDesign.Services;
+using AutoMapper;
 using Common.Exceptions.Auth;
 using Common.Exceptions.User;
 using Microsoft.AspNetCore.Mvc;
@@ -12,16 +14,19 @@ namespace ApiDigitalDesign.Controllers
     public class AuthController : ControllerBase
     {
         private readonly AuthService _authService;
-        public AuthController(AuthService authService)
+        private readonly IMapper _mapper;
+        public AuthController(AuthService authService, IMapper mapper)
         {
             _authService = authService;
+            _mapper = mapper;
         }
         [HttpPost]
-        public async Task<ActionResult> SignIn(SignInModel dto)
+        public async Task<ActionResult> SignIn(SignInRequest request)
         {
             try
             {
-                var response = await _authService.GetTokensAsync(dto);
+                var model = _mapper.Map<SignInModel>(request);
+                var response = await _authService.GetTokensAsync(model);
                 return Ok(response);
             }
             catch(UserNotFoundException ex)

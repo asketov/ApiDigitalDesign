@@ -21,7 +21,8 @@ namespace ApiDigitalDesign.AutoMapper.MapperProfiles
             CreateMap<CreateUserModel, User>()
                 .ForMember(d => d.PasswordHash, m => m.MapFrom(s => HashHelper.GetHash(s.Password)))
                 .ForMember(d => d.BirthDate, m => m.MapFrom(s => s.BirthDate.UtcDateTime))
-                .ForMember(d => d.CloseAccount, m => m.MapFrom(s => false));
+                .ForMember(d => d.CloseAccount, m => m.MapFrom(s => false))
+                .ForMember(d => d.Deleted, m => m.MapFrom(s => false));
 
             CreateMap<User, UserAvatarModel>().AfterMap<AvatarMapperAction>();
         }

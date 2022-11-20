@@ -1,4 +1,5 @@
 ﻿using ApiDigitalDesign.Models.AttachModels;
+using ApiDigitalDesign.Models.AuthModels;
 using ApiDigitalDesign.Models.UserModels;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
@@ -19,11 +20,12 @@ namespace ApiDigitalDesign.Services
     {
         private readonly DataContext _db;
         private readonly IMapper _mapper;
-
-        public UserService(DataContext db, IMapper mapper)
+        private readonly AuthService _authService;
+        public UserService(DataContext db, IMapper mapper, AuthService authService)
         {
             _db = db;
             _mapper = mapper;
+            _authService = authService;
         }
         /// <summary>
         /// Add avatar to User by Info TempFile and UserId.
@@ -68,15 +70,14 @@ namespace ApiDigitalDesign.Services
         /// <param name="model"></param>
         /// <returns></returns>
         /// <exception cref="UserAlreadyExistException"></exception>
-        public async Task<Guid> CreateUserAsync(CreateUserModel model)
+        public async Task<TokenModel> CreateUserAsync(CreateUserModel model)
         {
             var user = await _db.Users.AsNoTracking()
                 .FirstOrDefaultAsync(u => u.Email == model.Email);
             if (user!=null) throw new UserAlreadyExistException("such user already exist");
             user = _mapper.Map<User>(model);
-            var t =  _db.Users.Add(user);
             await _db.SaveChangesAsync();
-            return t.Entity.Id;
+            return await _authService.GetTokensAsync(_mapper.Map<SignInModel>(user));
         }
         /// <summary>
         /// Get user include avatar by Guid id
@@ -131,6 +132,26 @@ namespace ApiDigitalDesign.Services
                     passwordHash == user.PasswordHash);
             if (user == null) throw new UserNotFoundException("such user not found");
             return user;
+        }
+
+        public async Task ChangeVisibilityAccount(Guid userId)
+        {
+            var user = await GetUserByIdAsync(userId);
+            user.CloseAccount = !user.CloseAccount;
+            await _db.SaveChangesAsync();
+        }
+
+        public async Task DeleteAccount(Guid userId)
+        {
+            var user = await GetUserByIdAsync(userId);
+            user.Deleted = true;
+            await _db.SaveChangesAsync();
+        }
+        public async Task RecoverAccount(Guid userId)
+        {
+            var user = await GetUserByIdAsync(userId);
+            user.Deleted = false;
+            await _db.SaveChangesAsync();
         }
     }
 }

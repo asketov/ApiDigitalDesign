@@ -2,6 +2,7 @@ using System.Reflection;
 using ApiDigitalDesign;
 using ApiDigitalDesign.AutoMapper;
 using ApiDigitalDesign.AutoMapper.MapperProfiles;
+using ApiDigitalDesign.Middlewares.AccountValidator;
 using ApiDigitalDesign.Middlewares.TokenValidator;
 using ApiDigitalDesign.Services;
 using DAL;
@@ -38,7 +39,9 @@ builder.Services.AddAuthentication(options =>
 // Add services to the container.
 
 builder.Services.AddControllers();
-builder.Services.AddAutoMapper(typeof(UserProfile).Assembly, typeof(PostProfile).Assembly,typeof(AttachProfile).Assembly);
+builder.Services.AddAutoMapper(typeof(UserProfile).Assembly, 
+    typeof(PostProfile).Assembly,typeof(AttachProfile).Assembly,
+        typeof(AuthProfile).Assembly, typeof(SubscribeProfile).Assembly);
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
 builder.Services.AddSwaggerGen();
@@ -81,5 +84,6 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseTokenValidator();
+app.UseAccountValidator();
 app.MapControllers();
 app.Run();

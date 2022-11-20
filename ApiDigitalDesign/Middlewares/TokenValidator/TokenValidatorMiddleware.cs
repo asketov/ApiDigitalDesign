@@ -34,9 +34,9 @@ namespace ApiDigitalDesign.Middlewares.TokenValidator
                     var sessionId = context.User.Claims.GetClaimValueOrDefault<Guid>(Auth.SessionClaim);
                     var userId = context.User.Claims.GetClaimValueOrDefault<Guid>(Auth.UserClaim);
                     if (userId == default) throw new InvalidTokenException("invalid userId");
+                    var user = await userService.GetUserByIdAsync(userId);
                     if (sessionId != default)
                     {
-                        var user = await userService.GetUserByIdAsync(userId);
                         var session = await sessionService.GetSessionById(sessionId);
                         if (!session.IsActive)
                         {
@@ -45,7 +45,6 @@ namespace ApiDigitalDesign.Middlewares.TokenValidator
                             context.Response.StatusCode = 401;
                         }
                     }
-
                     if (isOk)
                     {
                         await _next(context);

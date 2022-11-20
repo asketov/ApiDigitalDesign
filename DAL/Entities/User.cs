@@ -15,6 +15,7 @@ namespace DAL.Entities
         public string PasswordHash { get; set; }
         public DateTimeOffset BirthDate { get; set; }
         public bool CloseAccount { get; set; }
+        public bool Deleted { get; set; }
         public virtual ICollection<UserSession>? Sessions { get; set; }
         public virtual ICollection<Post>? Posts { get; set; }
         public virtual ICollection<Comment>? Comments { get; set; }

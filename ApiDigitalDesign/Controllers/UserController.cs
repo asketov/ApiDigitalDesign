@@ -73,9 +73,8 @@ namespace ApiDigitalDesign.Controllers
         {
             try
             {
-                var userId = await _userService.CreateUserAsync(dto);
-                return new JsonResult(new {message = $"Server created new User with id:{userId}"})
-                    {StatusCode = StatusCodes.Status201Created};
+                var tokens = await _userService.CreateUserAsync(dto);
+                return Ok(tokens);
             }
             catch (UserAlreadyExistException)
             {
@@ -101,6 +100,32 @@ namespace ApiDigitalDesign.Controllers
         {
             var users = await _userService.GetUsersAsync();
             return Ok(users);
+        }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<ActionResult> ChangeVisibilityAccount()
+        {
+            try
+            {
+                await _userService.ChangeVisibilityAccount(UserId);
+                return new JsonResult(new { message = "Visibility successfully changed" })
+                    { StatusCode = StatusCodes.Status200OK };
+            }
+            catch
+            {
+                return new JsonResult(new { message = "Service in unavailable" })
+                    { StatusCode = StatusCodes.Status503ServiceUnavailable };
+            }
+        }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<ActionResult> DeleteAccount()
+        {
+           await _userService.DeleteAccount(UserId);
+           return new JsonResult(new { message = "Account successfully deleted" })
+               { StatusCode = StatusCodes.Status200OK };
         }
     }
 }

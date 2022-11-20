@@ -34,7 +34,6 @@
 
   <ItemGroup>
     <Folder Include="attaches\" />
-    <Folder Include="Models\SubscribeModels\" />
   </ItemGroup>
 
 </Project>

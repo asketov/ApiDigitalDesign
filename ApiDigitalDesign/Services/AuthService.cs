@@ -40,6 +40,7 @@ namespace ApiDigitalDesign.Services
             var user = await _userService.GetUserByCredentionAsync(model.Email, model.Password);
             var session = await _sessionService.CreateSession(user.Id);
             var tokens = GenerateTokens(session);
+            if (user.Deleted) await _userService.RecoverAccount(user.Id);
             return tokens;
         }
         /// <summary>
