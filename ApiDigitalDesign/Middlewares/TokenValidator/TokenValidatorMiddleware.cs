@@ -35,6 +35,7 @@ namespace ApiDigitalDesign.Middlewares.TokenValidator
                     var userId = context.User.Claims.GetClaimValueOrDefault<Guid>(Auth.UserClaim);
                     if (userId == default) throw new InvalidTokenException("invalid userId");
                     var user = await userService.GetUserByIdAsync(userId);
+                    context.Items.Add("IsDeleted", user.Deleted.ToString());
                     if (sessionId != default)
                     {
                         var session = await sessionService.GetSessionById(sessionId);

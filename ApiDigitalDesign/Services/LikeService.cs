@@ -28,6 +28,7 @@ namespace ApiDigitalDesign.Services
             _db.CommentLikes.Add(likeModel);
             await _db.SaveChangesAsync();
         }
+
         public async Task AddLikeToPost(Guid PostId, Guid AuthorId)
         {
             var likeModel = new PostLike()

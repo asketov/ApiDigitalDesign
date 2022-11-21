@@ -4,8 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ApiDigitalDesign.Models.AttachModels;
+using ApiDigitalDesign.Models.AuthModels;
 using ApiDigitalDesign.Models.UserModels;
 using ApiDigitalDesign.Services;
+using AutoMapper;
 using Common.Exceptions.Attach;
 using Common.Exceptions.User;
 using Common.Generics;
@@ -22,7 +24,9 @@ namespace ApiDigitalDesign.Controllers
     public class UserController : BaseController
     {
         private readonly UserService _userService;
-        public UserController(UserService userService, LinkGeneratorService links)
+        private readonly AuthService _authService;
+        private readonly IMapper _mapper;
+        public UserController(UserService userService, LinkGeneratorService links, AuthService authService, IMapper mapper)
         {
             _userService = userService;
             links.LinkAvatarGenerator = x =>
@@ -30,6 +34,8 @@ namespace ApiDigitalDesign.Controllers
                 {
                     userId = x.Id
                 });
+            _authService = authService;
+            _mapper = mapper;
         }
         [HttpPost]
         [Authorize]
@@ -69,11 +75,13 @@ namespace ApiDigitalDesign.Controllers
             }
         }
         [HttpPost]
-        public async Task<IActionResult> CreateUser(CreateUserModel dto)
+        public async Task<IActionResult> CreateUser(CreateUserModel request)
         {
             try
             {
-                var tokens = await _userService.CreateUserAsync(dto);
+                await _userService.CreateUserAsync(request);
+                var model = _mapper.Map<SignInModel>(request);
+                var tokens = await _authService.GetTokensAsync(model);
                 return Ok(tokens);
             }
             catch (UserAlreadyExistException)

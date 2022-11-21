@@ -20,12 +20,10 @@ namespace ApiDigitalDesign.Services
     {
         private readonly DataContext _db;
         private readonly IMapper _mapper;
-        private readonly AuthService _authService;
-        public UserService(DataContext db, IMapper mapper, AuthService authService)
+        public UserService(DataContext db, IMapper mapper)
         {
             _db = db;
             _mapper = mapper;
-            _authService = authService;
         }
         /// <summary>
         /// Add avatar to User by Info TempFile and UserId.
@@ -70,14 +68,14 @@ namespace ApiDigitalDesign.Services
         /// <param name="model"></param>
         /// <returns></returns>
         /// <exception cref="UserAlreadyExistException"></exception>
-        public async Task<TokenModel> CreateUserAsync(CreateUserModel model)
+        public async Task CreateUserAsync(CreateUserModel model)
         {
             var user = await _db.Users.AsNoTracking()
                 .FirstOrDefaultAsync(u => u.Email == model.Email);
-            if (user!=null) throw new UserAlreadyExistException("such user already exist");
+            if (user != null) throw new UserAlreadyExistException("such user already exist");
             user = _mapper.Map<User>(model);
+            _db.Users.Add(user);
             await _db.SaveChangesAsync();
-            return await _authService.GetTokensAsync(_mapper.Map<SignInModel>(user));
         }
         /// <summary>
         /// Get user include avatar by Guid id

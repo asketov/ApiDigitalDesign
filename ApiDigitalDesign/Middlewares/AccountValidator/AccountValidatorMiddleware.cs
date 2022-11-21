@@ -24,7 +24,7 @@ namespace ApiDigitalDesign.Middlewares.AccountValidator
             if (!context.User.Identity!.IsAuthenticated) await _next(context);
             else
             {
-                var isDeleted = (bool) context.Items.FirstOrDefault(u => u.Key.ToString() == "isDeleted").Value!;
+                var isDeleted = bool.Parse(context.Items.FirstOrDefault(u => u.Key.ToString() == "IsDeleted").Value!.ToString()!);
                 if (isDeleted)
                 {
                     context.Response.Clear();

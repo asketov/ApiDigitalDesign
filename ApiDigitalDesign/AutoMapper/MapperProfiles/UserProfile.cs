@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
 using Common.Helpers;
+using ApiDigitalDesign.Models.AuthModels;
 
 namespace ApiDigitalDesign.AutoMapper.MapperProfiles
 {
@@ -16,6 +17,7 @@ namespace ApiDigitalDesign.AutoMapper.MapperProfiles
     {
         public UserProfile()
         {
+            CreateMap<CreateUserModel, SignInModel>();
             CreateMap<User, UserModel>();
             CreateMap<Avatar, AttachModel>();
             CreateMap<CreateUserModel, User>()
@@ -25,6 +27,7 @@ namespace ApiDigitalDesign.AutoMapper.MapperProfiles
                 .ForMember(d => d.Deleted, m => m.MapFrom(s => false));
 
             CreateMap<User, UserAvatarModel>().AfterMap<AvatarMapperAction>();
+            CreateMap<SignInRequest, SignInModel>();
         }
     }
 }
