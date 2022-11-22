@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using ApiDigitalDesign.Models.LikeModels;
 using AutoMapper;
+using Common.Exceptions.Like;
 using DAL;
 using DAL.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace ApiDigitalDesign.Services
 {
@@ -19,25 +17,38 @@ namespace ApiDigitalDesign.Services
             _db = db;
         }
 
-        public async Task AddLikeToComment(Guid CommentId, Guid AuthorId)
+        public async Task AddLikeToComment(LikeCommentModel request)
         {
-            var likeModel = new CommentLike()
-            {
-                Created = DateTime.UtcNow, AuthorId = AuthorId, CommentId = CommentId
-            };
-            _db.CommentLikes.Add(likeModel);
+            if (await GetCommentLike(request) != null) throw new LikeAlreadyExistException();
+            var model = _mapper.Map<CommentLike>(request);
+            _db.CommentLikes.Add(model);
+            await _db.SaveChangesAsync();
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        /// <exception cref="LikeAlreadyExistException"></exception>
+        public async Task AddLikeToPost(LikePostModel request)
+        {
+            if (await GetPostLike(request) != null) throw new LikeAlreadyExistException();
+            var model = _mapper.Map<PostLike>(request);
+            _db.PostLikes.Add(model);
             await _db.SaveChangesAsync();
         }
 
-        public async Task AddLikeToPost(Guid PostId, Guid AuthorId)
+        public async Task<Like?> GetPostLike(LikePostModel model)
         {
-            var likeModel = new PostLike()
-            {
-                Created = DateTime.UtcNow,
-                AuthorId = AuthorId, PostId = PostId
-            };
-            _db.PostLikes.Add(likeModel);
-            await _db.SaveChangesAsync();
+            var like = await _db.PostLikes
+                .FirstOrDefaultAsync(f => f.AuthorId == model.AuthorId && f.PostId == model.PostId);
+            return like;
+        }
+        public async Task<Like?> GetCommentLike(LikeCommentModel model)
+        {
+            var like = await _db.CommentLikes
+                .FirstOrDefaultAsync(f => f.AuthorId == model.AuthorId && f.CommentId == model.CommentId);
+            return like;
         }
     }
 }

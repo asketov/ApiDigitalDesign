@@ -26,12 +26,11 @@ namespace ApiDigitalDesign.Services
         /// <summary>
         /// Create Post with attaches.(need refactor)
         /// </summary>
-        /// <param name="request"></param>
+        /// <param name="model"></param>
         /// <returns>Guid id created post.</returns>
         /// <exception cref="FileNotExistException">one of the files don't exist</exception>
-        public async Task<Guid> CreatePostAsync(CreatePostRequest request)
+        public async Task<Guid> CreatePostAsync(CreatePostModel model)
         {
-            var model = _mapper.Map<CreatePostModel>(request);
             model.Attaches.ForEach(q =>
             {
                 q.FilePath = AttachService.CopyTempFileToAttaches(q.TempId);
@@ -48,16 +47,27 @@ namespace ApiDigitalDesign.Services
         /// <param name="postId"></param>
         /// <returns><see cref="PostModel"/></returns>
         /// <exception cref="PostNotFoundException"></exception>
-        public async Task<PostModel> GetPostModel(Guid postId)
+        public async Task<List<PostModel>> GetUserPosts(Guid userId, int skip, int take)
         {
-            var post = await _db.Posts.Include(x => x.Author).Include(x=>x.PostAttaches).AsNoTracking()
-                .FirstOrDefaultAsync(p => p.Id == postId);
-            if (post != null)
-            {
-                var getPostModel = _mapper.Map<PostModel>(post);
-                return getPostModel;
-            }
-            throw new PostNotFoundException("post with such id not found");
+            var posts = await _db.Posts.Where(u=>u.AuthorId == userId)
+                .Include(x => x.PostAttaches).Include(f=>f.Comments).Include(f => f.Likes)
+                .AsNoTracking().OrderByDescending(x => x.Created).Skip(skip).Take(take)
+                .Select(x => _mapper.Map<PostModel>(x))
+                .ToListAsync();
+            return posts;
+        }
+        public async Task<List<PostModel>> GetPostsSubscriptions(Guid userId, int skip, int take)
+        {
+            var subscribes = await _db.Subscribes
+                .Where(u => u.SubscriberId == userId).Include(x => x.Recipient)
+                .ThenInclude(u => u.Posts)!.ThenInclude(u => u.PostAttaches)
+                .Include(x => x.Recipient).ThenInclude(f=>f.Posts)!.ThenInclude(f => f.Comments)
+                .Include(x => x.Recipient).ThenInclude(f => f.Posts)!.ThenInclude(f => f.Likes)
+                .AsNoTracking().ToListAsync();
+            
+            var posts = subscribes.SelectMany(x => x.Recipient.Posts!.Skip(skip).Take(take))
+                .Select(x => _mapper.Map<PostModel>(x)).ToList();
+            return posts;
         }
         /// <summary>
         /// 
@@ -75,41 +85,40 @@ namespace ApiDigitalDesign.Services
         /// <summary>
         /// Returns id created comment
         /// </summary>
-        /// <param name="request"></param>
+        /// <param name="model"></param>
         /// <exception cref="PostNotFoundException"></exception>
-        public async Task<Guid> CreateCommentAsync(CreateCommentRequest request)
+        public async Task CreateCommentAsync(CreateCommentModel model)
         {
-            var model = _mapper.Map<CreateCommentModel>(request);
-            var post = await GetClearPostAsync(model.PostId);
+            var post = await GetFullPostAsync(model.PostId);
             var comm = _mapper.Map<Comment>(model);
-            var t = _db.Comments.Add(comm);
+            post.Comments!.Add(comm);
             await _db.SaveChangesAsync();
-            return t.Entity.Id;
         }
         /// <summary>
-        /// Get Clear Post without relations
+        /// Get full Post with all relations
         /// </summary>
         /// <param name="postId"></param>
         /// <returns></returns>
         /// <exception cref="PostNotFoundException"></exception>
-        public async Task<Post> GetClearPostAsync(Guid postId)
+        public async Task<Post> GetFullPostAsync(Guid postId)
         {
-            var post = await _db.Posts.FirstOrDefaultAsync(p => p.Id == postId);
+            var post = await _db.Posts.Include(u=>u.Comments).Include(k=>k.Author).Include(k=>k.PostAttaches).Include(f=>f.Likes)
+                .FirstOrDefaultAsync(p => p.Id == postId);
             if (post == null) throw new PostNotFoundException("Such post not exist.");
             return post;
         }
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="skip"></param>
+        /// <param name="take"></param>
         /// <param name="postId"></param>
         /// <returns></returns>
-        /// <exception cref="CommentNotFoundException"></exception>
-        public async Task<List<CommentModel>> GetAllPostComments(Guid postId)
+        public async Task<List<CommentModel>> GetPostComments(int skip, int take, Guid postId)
         {
-            var comments = await _db.Comments.Where(comm=>comm.PostId==postId).AsNoTracking()
+            var comments = await _db.Comments.Where(comm=>comm.PostId == postId)
+                .OrderByDescending(u=>u.Created).Skip(skip).Take(take).AsNoTracking()
                 .ProjectTo<CommentModel>(_mapper.ConfigurationProvider).ToListAsync();
-            if (!comments.Any())
-                throw new CommentNotFoundException("In this post not exist anyone comment or postId invalid");
             return comments;
         }
 

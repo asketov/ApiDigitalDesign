@@ -223,7 +223,8 @@ namespace ApiDigitalDesign.Migrations
                     b.Property<Guid>("CommentId")
                         .HasColumnType("uuid");
 
-                    b.HasIndex("CommentId");
+                    b.HasIndex("CommentId", "AuthorId")
+                        .IsUnique();
 
                     b.ToTable("CommentLikes", (string)null);
                 });
@@ -247,7 +248,8 @@ namespace ApiDigitalDesign.Migrations
                     b.Property<Guid>("PostId")
                         .HasColumnType("uuid");
 
-                    b.HasIndex("PostId");
+                    b.HasIndex("PostId", "AuthorId")
+                        .IsUnique();
 
                     b.ToTable("PostLikes", (string)null);
                 });

@@ -33,19 +33,13 @@ namespace ApiDigitalDesign.Services
         /// <returns>Id created resource.</returns>
         /// <exception cref="UserNotFoundException"></exception>
         /// <exception cref="FileNotExistException"></exception>
-        public async Task<Guid> AddAvatarToUser(Guid userId, MetadataModel model)
+        public async Task AddAvatarToUserAsync(Guid userId, MetadataModel model)
         {
             var path = AttachService.CopyTempFileToAttaches(model.TempId);
             var user = await GetUserByIdAsync(userId);
-            if (user != null)
-            {
-                var avatar = new Avatar { Author = user, MimeType = model.MimeType, 
-                    FilePath = path, Name = model.Name, Size = model.Size };
-                _db.Avatars.Add(avatar);
-                await _db.SaveChangesAsync();
-                return avatar.Id;
-            } 
-            throw new UserNotFoundException("user with such userId don't exist");
+            user.Avatar = new Avatar { Author = user, MimeType = model.MimeType, 
+                FilePath = path, Name = model.Name, Size = model.Size };
+            await _db.SaveChangesAsync();
         }
 
         
@@ -55,7 +49,7 @@ namespace ApiDigitalDesign.Services
         /// <param name="userId"></param>
         /// <returns></returns>
         /// <exception cref="AvatarNotFoundException"></exception>
-        public async Task<AttachModel?> GetUserAvatar(Guid userId)
+        public async Task<AttachModel> GetUserAvatarAsync(Guid userId)
         {
             var avatar = await _db.Avatars.FirstOrDefaultAsync(u => u.UserId == userId);
             if (avatar == null) throw new AvatarNotFoundException("avatar not exist");

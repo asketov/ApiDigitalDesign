@@ -43,13 +43,13 @@ namespace ApiDigitalDesign.Controllers
         {
             try
             {
-                Guid avatarId = await _userService.AddAvatarToUser(UserId, model);
-                return new JsonResult(new {message = $"Server created new Avatar with id:{avatarId}"})
+                await _userService.AddAvatarToUserAsync(UserId, model);
+                return new JsonResult(new {message = $"Server created new Avatar for current user"})
                     { StatusCode = StatusCodes.Status201Created };
             }
             catch (FileNotExistException)
             {
-                return new JsonResult(new { message = "File not exist in tempDirectory" })
+                return new JsonResult(new { message = "File not exist" })
                     { StatusCode = StatusCodes.Status400BadRequest };
             }
                 
@@ -60,7 +60,7 @@ namespace ApiDigitalDesign.Controllers
         {
             try
             {
-                var attach = await _userService.GetUserAvatar(userId);
+                var attach = await _userService.GetUserAvatarAsync(userId);
                 HttpContext.Response.ContentType = attach.MimeType;
                 FileContentResult result = new FileContentResult(System.IO.File.ReadAllBytes(attach.FilePath), attach.MimeType)
                 {
@@ -68,7 +68,7 @@ namespace ApiDigitalDesign.Controllers
                 };
                 return result;
             }
-            catch (UserNotFoundException ex)
+            catch (AvatarNotFoundException ex)
             {
                 return new JsonResult(new { message = ex.Message })
                     { StatusCode = StatusCodes.Status404NotFound };

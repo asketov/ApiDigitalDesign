@@ -12,7 +12,6 @@ namespace ApiDigitalDesign.Models.PostModels
         public string Content { get; set; } = null!;
         public Guid PostId { get; set; }
         public Guid AuthorId { get; set; }
-        public Guid Id { get; set; }
-        
+
     }
 }

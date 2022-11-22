@@ -7,12 +7,11 @@ using System.Threading.Tasks;
 
 namespace ApiDigitalDesign.Models.PostModels
 {
-    public class CreateCommentRequest
+    public class GetPostsSubscriptionsRequest
     {
-        [Required]
-        public string Content { get; set; } = null!;
-        [Required]
-        public Guid PostId { get; set; }
-        public Guid? AuthorId { get; set; }
+        [Range(0, Int32.MaxValue)]
+        public int SkipPosts { get; set; } = 0;
+        [Range(1, 100)]
+        public int TakePosts { get; set; } = 10;
     }
 }

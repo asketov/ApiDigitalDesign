@@ -81,7 +81,7 @@ namespace ApiDigitalDesign.Controllers
         {
             try
             {
-                var attach = await _userService.GetUserAvatar(UserId);
+                var attach = await _userService.GetUserAvatarAsync(UserId);
                 if (attach != null)
                     return File(System.IO.File.ReadAllBytes(attach.FilePath), attach.MimeType);
                 return new JsonResult(new { message = "Avatar not found" })

@@ -16,10 +16,13 @@ namespace ApiDigitalDesign.AutoMapper.MapperProfiles
         public PostProfile()
         {
             CreateMap<Comment, CommentModel>()
-                .ForMember(s => s.AuthorId, f => f.MapFrom(k => k.Author.Id));
+                .ForMember(s => s.AuthorId, f => f.MapFrom(k => k.Author.Id))
+                .ForMember(f => f.CountLikes, k => k.MapFrom(l => l.Likes!.Count));
             CreateMap<Post, PostModel>()
                 .ForMember(s => s.AuthorId, f => f.MapFrom(k => k.Author.Id))
-                .ForMember(d => d.LinksToAttaches, m => m.MapFrom(d => d.PostAttaches)); 
+                .ForMember(d => d.LinksToAttaches, m => m.MapFrom(d => d.PostAttaches))
+                .ForMember(f => f.CountLikes, k => k.MapFrom(l => l.Likes!.Count))
+                .ForMember(f => f.CountComments, k => k.MapFrom(l => l.Comments!.Count));
             CreateMap<PostAttach, AttachLinkModel>()
                 .AfterMap<PostAttachMapperAction>();
             CreateMap<PostAttach, AttachModel>();

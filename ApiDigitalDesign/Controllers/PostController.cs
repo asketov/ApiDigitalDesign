@@ -8,6 +8,8 @@ using Common.Exceptions.User;
 using Common.Generics;
 using DAL.Entities;
 using System.ComponentModel.Design;
+using ApiDigitalDesign.Models.LikeModels;
+using AutoMapper;
 
 namespace ApiDigitalDesign.Controllers
 {
@@ -18,9 +20,9 @@ namespace ApiDigitalDesign.Controllers
     {
         private readonly PostService _postService;
         private readonly LikeService _likeService;
+        private readonly IMapper _mapper;
 
-
-        public PostController(PostService postService, LikeService likeService, LinkGeneratorService _links)
+        public PostController(PostService postService, LikeService likeService, LinkGeneratorService _links, IMapper mapper)
         {
             _postService = postService;
             _likeService = likeService;
@@ -28,16 +30,17 @@ namespace ApiDigitalDesign.Controllers
             new {
                 postAttachId = x.Id
             });
-
+            _mapper = mapper;
         }
 
         [Authorize]
         [HttpPost]
-        public async Task<ActionResult> CreatePost(CreatePostRequest model)
+        public async Task<ActionResult> CreatePost(CreatePostRequest request)
         {
             try
             {
-                model.AuthorId = UserId;
+                request.AuthorId = UserId;
+                var model = _mapper.Map<CreatePostModel>(request);
                 var postId = await _postService.CreatePostAsync(model);
                 return new JsonResult(new {message = $"Server created new Post with id:{postId}"})
                     {StatusCode = StatusCodes.Status200OK};
@@ -56,12 +59,12 @@ namespace ApiDigitalDesign.Controllers
 
         [HttpGet]
         [Authorize]
-        public async Task<ActionResult<PostModel>> GetPost(Guid postId)
+        public async Task<ActionResult> GetPostsForTape(int skip = 0, int take = 10)
         {
             try
             {
-                var postModel = await _postService.GetPostModel(postId);
-                return Ok(postModel);
+                var posts = await _postService.GetPostsSubscriptions(UserId, skip, take);
+                return Ok(posts);
             }
             catch (PostNotFoundException ex)
             {
@@ -72,13 +75,14 @@ namespace ApiDigitalDesign.Controllers
 
         [HttpPost]
         [Authorize]
-        public async Task<ActionResult> CreateComment(CreateCommentRequest model)
+        public async Task<ActionResult> CreateComment(CreateCommentRequest request)
         {
             try
             {
-                model.AuthorId = UserId;
-                var commendId = await _postService.CreateCommentAsync(model);
-                return new JsonResult(new {message = $"Server created new Comment with id:{commendId}"})
+                request.AuthorId = UserId;
+                var model = _mapper.Map<CreateCommentModel>(request);
+                await _postService.CreateCommentAsync(model);
+                return new JsonResult(new {message = $"Server created new Comment"})
                     {StatusCode = StatusCodes.Status200OK};
             }
             catch (PostNotFoundException ex)
@@ -86,41 +90,34 @@ namespace ApiDigitalDesign.Controllers
                 return new JsonResult(new {message = ex.Message})
                     {StatusCode = StatusCodes.Status404NotFound};
             }
-            catch
-            {
-                return new JsonResult(new { message = "Server can't process the request" })
-                    { StatusCode = StatusCodes.Status503ServiceUnavailable };
-            }
+            //catch
+            //{
+            //    return new JsonResult(new { message = "Server can't process the request" })
+            //        { StatusCode = StatusCodes.Status503ServiceUnavailable };
+            //}
         }
 
         [HttpGet]
         [Authorize]
-        public async Task<ActionResult<List<CommentModel>>> GetPostComments(Guid postId)
+        public async Task<ActionResult<List<CommentModel>>> GetPostComments(Guid postId, int skip = 0, int take = 10)
         {
-            try
-            {
-                return await _postService.GetAllPostComments(postId);
-            }
-            catch (CommentNotFoundException ex)
-            {
-                return new JsonResult(new { message = ex.Message })
-                    { StatusCode = StatusCodes.Status404NotFound };
-            }
+            return await _postService.GetPostComments(skip, take, postId);
         }
 
         [HttpPost]
         [Authorize]
-        public async Task AddLikeToComment(Guid commentId)
+        public async Task AddLikeToComment(LikeCommentModel request)
         {
-           await _likeService.AddLikeToComment(commentId, UserId);
+            request.AuthorId = UserId;
+            await _likeService.AddLikeToComment(request);
         }
 
         [HttpPost]
         [Authorize]
-        public async Task AddLikeToPost(Guid postId)
+        public async Task AddLikeToPost(LikePostModel request)
         {
-            await _likeService.AddLikeToPost(postId, UserId);
-
+            request.AuthorId = UserId;
+            await _likeService.AddLikeToPost(request);
         }
     }
 }
