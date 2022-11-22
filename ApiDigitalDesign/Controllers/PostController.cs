@@ -61,18 +61,18 @@ namespace ApiDigitalDesign.Controllers
         [Authorize]
         public async Task<ActionResult> GetPostsForTape(int skip = 0, int take = 10)
         {
-            try
-            {
-                var posts = await _postService.GetPostsSubscriptions(UserId, skip, take);
-                return Ok(posts);
-            }
-            catch (PostNotFoundException ex)
-            {
-                return new JsonResult(new { message = ex.Message })
-                    { StatusCode = StatusCodes.Status404NotFound };
-            }
+            var posts = await _postService.GetPostsSubscriptions(UserId, skip, take);
+            return Ok(posts);
+            
         }
 
+        [HttpGet]
+        [Authorize]
+        public async Task<ActionResult> GetUserPosts(int skip = 0, int take = 10)
+        {
+            var posts = await _postService.GetUserPosts(UserId, skip, take);
+            return Ok(posts);
+        }
         [HttpPost]
         [Authorize]
         public async Task<ActionResult> CreateComment(CreateCommentRequest request)
@@ -119,5 +119,6 @@ namespace ApiDigitalDesign.Controllers
             request.AuthorId = UserId;
             await _likeService.AddLikeToPost(request);
         }
+
     }
 }

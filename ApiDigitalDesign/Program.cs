@@ -41,7 +41,7 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddControllers();
 builder.Services.AddAutoMapper(typeof(UserProfile).Assembly, 
     typeof(PostProfile).Assembly,typeof(AttachProfile).Assembly,
-        typeof(AuthProfile).Assembly, typeof(SubscribeProfile).Assembly);
+        typeof(AuthProfile).Assembly, typeof(SubscribeProfile).Assembly, typeof(LikeProfile).Assembly);
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
 builder.Services.AddSwaggerGen();

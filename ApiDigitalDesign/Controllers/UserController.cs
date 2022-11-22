@@ -103,12 +103,12 @@ namespace ApiDigitalDesign.Controllers
             return Ok(model);
         }
 
-        [HttpGet]
-        public async Task<ActionResult<List<UserAvatarModel>>> GetAllUsers()
-        {
-            var users = await _userService.GetUsersAsync();
-            return Ok(users);
-        }
+        //[HttpGet]
+        //public async Task<ActionResult<List<UserAvatarModel>>> GetAllUsers()
+        //{
+        //    var users = await _userService.GetUsersAsync();
+        //    return Ok(users);
+        //}
 
         [HttpPost]
         [Authorize]

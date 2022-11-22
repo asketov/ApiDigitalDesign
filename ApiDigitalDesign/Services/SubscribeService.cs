@@ -1,4 +1,6 @@
-﻿using ApiDigitalDesign.Models.SubscribeModels;
+﻿using ApiDigitalDesign.Controllers;
+using ApiDigitalDesign.Models.SubscribeModels;
+using ApiDigitalDesign.Models.UserModels;
 using AutoMapper;
 using Common.Exceptions.Subscribe;
 using DAL;
@@ -35,6 +37,20 @@ namespace ApiDigitalDesign.Services
             return sub;
         }
 
+        public async Task<List<UserAvatarModel>> GetSubscribers(int skip, int take, Guid userId)
+        {
+            var subscribers = await _db.Subscribes.Where(u => u.IsAccepted && u.RecipientId == userId).Include(f=>f.Subscriber.Avatar)
+                .AsNoTracking().OrderByDescending(x=>x.Created).Skip(skip).Take(take)
+                .Select(x =>_mapper.Map<UserAvatarModel>(x.Subscriber)).ToListAsync();
+            return subscribers;
+        }
+        public async Task<List<UserAvatarModel>> GetSubscriptions(int skip, int take, Guid userId)
+        {
+            var subscribers = await _db.Subscribes.Where(u => u.IsAccepted && u.SubscriberId == userId).Include(f => f.Subscriber.Avatar)
+                .AsNoTracking().OrderByDescending(x => x.Created).Skip(skip).Take(take)
+                .Select(x => _mapper.Map<UserAvatarModel>(x.Subscriber)).ToListAsync();
+            return subscribers;
+        }
         public async Task DeleteSubscribeAsync(SubscribeModel model)
         {
             var sub = await GetSubscribeAsync(model);

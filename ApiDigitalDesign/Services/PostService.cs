@@ -41,12 +41,7 @@ namespace ApiDigitalDesign.Services
             await _db.SaveChangesAsync();
             return t.Entity.Id;
         }
-        /// <summary>
-        /// get postModel by guid postId (need refactor)
-        /// </summary>
-        /// <param name="postId"></param>
-        /// <returns><see cref="PostModel"/></returns>
-        /// <exception cref="PostNotFoundException"></exception>
+        
         public async Task<List<PostModel>> GetUserPosts(Guid userId, int skip, int take)
         {
             var posts = await _db.Posts.Where(u=>u.AuthorId == userId)
@@ -64,7 +59,12 @@ namespace ApiDigitalDesign.Services
                 .Include(x => x.Recipient).ThenInclude(f=>f.Posts)!.ThenInclude(f => f.Comments)
                 .Include(x => x.Recipient).ThenInclude(f => f.Posts)!.ThenInclude(f => f.Likes)
                 .AsNoTracking().ToListAsync();
-            
+            //var subscribes1 = _db.Subscribes.Where(u => u.SubscriberId == userId).Select(e => new
+            //{
+            //    PostAttaches = e.Recipient.Posts!.Select(f => f.PostAttaches),
+            //    CommentsCount = e.Recipient.Posts!.Select(f => f.Comments).Count(),
+            //    LikesCount = e.Recipient.Posts!.Select(f => f.Likes).Count()
+            //}).AsNoTracking().AsQueryable();
             var posts = subscribes.SelectMany(x => x.Recipient.Posts!.Skip(skip).Take(take))
                 .Select(x => _mapper.Map<PostModel>(x)).ToList();
             return posts;

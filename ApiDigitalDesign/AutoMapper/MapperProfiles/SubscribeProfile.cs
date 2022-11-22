@@ -18,6 +18,7 @@ namespace ApiDigitalDesign.AutoMapper.MapperProfiles
                 .ForMember(u => u.IsAccepted, k => k.MapFrom(f => true));
             CreateMap<AddSubscribeModel, Subscribe>();
             CreateMap<AddSubscribeModel, SubscribeModel>();
+            CreateMap<Subscribe, SubscribeModel>();
         }
     }
 }
