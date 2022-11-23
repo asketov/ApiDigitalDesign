@@ -17,14 +17,14 @@ namespace ApiDigitalDesign.AutoMapper.MapperProfiles
         {
             CreateMap<Comment, CommentModel>()
                 .ForMember(s => s.AuthorId, f => f.MapFrom(k => k.Author.Id))
-                .ForMember(f => f.CountLikes, k => k.MapFrom(l => l.Likes!.Count));
+                .ForMember(f => f.CountLikes, k => k.MapFrom(l => l.Likes!.Count))
+                .AfterMap<AvatarMapperAction>();
             CreateMap<Post, PostModel>()
                 .ForMember(s => s.AuthorId, f => f.MapFrom(k => k.Author.Id))
                 .ForMember(d => d.LinksToAttaches, m => m.MapFrom(d => d.PostAttaches))
                 .ForMember(f => f.CountLikes, k => k.MapFrom(l => l.Likes!.Count))
                 .ForMember(f => f.CountComments, k => k.MapFrom(l => l.Comments!.Count));
-            CreateMap<PostAttach, AttachLinkModel>()
-                .AfterMap<PostAttachMapperAction>();
+            CreateMap<PostAttach, AttachLinkModel>().AfterMap<PostAttachMapperAction>();
             CreateMap<PostAttach, AttachModel>();
             CreateMap<CreatePostRequest, CreatePostModel>();
             CreateMap<MetadataModel, MetadataPathModel>();

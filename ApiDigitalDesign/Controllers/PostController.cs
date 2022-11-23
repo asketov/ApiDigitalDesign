@@ -31,6 +31,11 @@ namespace ApiDigitalDesign.Controllers
             new {
                 postAttachId = x.Id
             });
+            _links.LinkAvatarGenerator = x =>
+                Url.ControllerAction<AttachController>(nameof(AttachController.GetUserAvatar), new
+                {
+                    userId = x.Id
+                });
             _mapper = mapper;
         }
 

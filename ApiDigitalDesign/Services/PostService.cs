@@ -116,9 +116,9 @@ namespace ApiDigitalDesign.Services
         /// <returns></returns>
         public async Task<List<CommentModel>> GetPostComments(int skip, int take, Guid postId)
         {
-            var comments = await _db.Comments.Where(comm=>comm.PostId == postId)
-                .OrderByDescending(u=>u.Created).Skip(skip).Take(take).AsNoTracking()
-                .ProjectTo<CommentModel>(_mapper.ConfigurationProvider).ToListAsync();
+            var comments = await _db.Comments.Where(comm=>comm.PostId == postId).Include(u=>u.Author).ThenInclude(u=>u.Avatar)
+                .OrderByDescending(u=>u.Created).Skip(skip).Take(take).AsNoTracking().Select(x=>_mapper.Map<CommentModel>(x))
+                /*.ProjectTo<CommentModel>(_mapper.ConfigurationProvider)*/.ToListAsync();
             return comments;
         }
 
