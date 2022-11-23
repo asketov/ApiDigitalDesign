@@ -42,13 +42,12 @@ namespace ApiDigitalDesign.Controllers
             }
         }
         [HttpGet]
-        [Authorize]
-        public async Task<ActionResult> GetAttach(Guid attachId)
+        public async Task<ActionResult> GetAttach(Guid attachId, bool download = false)
         {
             try
             {
                 var attachModel = await _attachService.GetAttachAsync(attachId);
-                return File(System.IO.File.ReadAllBytes(attachModel.FilePath), attachModel.MimeType);
+                return RenderAttach(attachModel, download);
             }
             catch (AttachNotFoundException ex)
             {
@@ -57,12 +56,13 @@ namespace ApiDigitalDesign.Controllers
             }
         }
         [HttpGet]
-        public async Task<ActionResult> GetPostAttach(Guid postAttachId)
+        [Route("{postAttachId}")]
+        public async Task<ActionResult> GetPostAttach(Guid postAttachId, bool download = false)
         {
             try
             {
                 var attach = await _postService.GetPostAttachAsync(postAttachId);
-                return File(System.IO.File.ReadAllBytes(attach.FilePath), attach.MimeType);
+                return RenderAttach(attach, download);
             }
             catch (AttachNotFoundException ex)
             {
@@ -76,22 +76,28 @@ namespace ApiDigitalDesign.Controllers
             }
         }
         [HttpGet]
-        [Authorize]
-        public async Task<ActionResult> GetUserAvatar()
+        [Route("{userId}")]
+        public async Task<ActionResult> GetUserAvatar(Guid userId, bool download = false)
         {
             try
             {
-                var attach = await _userService.GetUserAvatarAsync(UserId);
-                if (attach != null)
-                    return File(System.IO.File.ReadAllBytes(attach.FilePath), attach.MimeType);
+                var attach = await _userService.GetUserAvatarAsync(userId);
+                return RenderAttach(attach, download);
+            }
+            catch (AvatarNotFoundException)
+            {
                 return new JsonResult(new { message = "Avatar not found" })
                     { StatusCode = StatusCodes.Status404NotFound };
             }
-            catch (AvatarNotFoundException ex)
-            {
-                return new JsonResult(new { message = ex.Message })
-                    { StatusCode = StatusCodes.Status404NotFound };
-            }
+        }
+        private FileStreamResult RenderAttach(AttachModel attach, bool download)
+        {
+            var fs = new FileStream(attach.FilePath, FileMode.Open);
+            var ext = Path.GetExtension(attach.Name);
+            if (download)
+                return File(fs, attach.MimeType, $"{ attach.Id }{ext}");
+            return File(fs, attach.MimeType);
+
         }
     }
 }

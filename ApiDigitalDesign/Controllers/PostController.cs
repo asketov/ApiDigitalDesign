@@ -10,6 +10,7 @@ using DAL.Entities;
 using System.ComponentModel.Design;
 using ApiDigitalDesign.Models.LikeModels;
 using AutoMapper;
+using Common.Exceptions.Like;
 
 namespace ApiDigitalDesign.Controllers
 {
@@ -106,18 +107,65 @@ namespace ApiDigitalDesign.Controllers
 
         [HttpPost]
         [Authorize]
-        public async Task AddLikeToComment(LikeCommentModel request)
+        public async Task<ActionResult> AddLikeToComment(LikeCommentModel request)
         {
-            request.AuthorId = UserId;
-            await _likeService.AddLikeToComment(request);
+            try
+            {
+                request.AuthorId = UserId;
+                await _likeService.AddLikeToComment(request);
+                return Ok();
+            }
+            catch (LikeAlreadyExistException)
+            {
+                return BadRequest();
+            }
         }
 
         [HttpPost]
         [Authorize]
-        public async Task AddLikeToPost(LikePostModel request)
+        public async Task<ActionResult> AddLikeToPost(LikePostModel request)
         {
-            request.AuthorId = UserId;
-            await _likeService.AddLikeToPost(request);
+            try
+            {
+                request.AuthorId = UserId;
+                await _likeService.AddLikeToPost(request);
+                return Ok();
+            }
+            catch (LikeAlreadyExistException)
+            {
+                return BadRequest();
+            }
+        }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<ActionResult> DeleteLikeFromComment(LikeCommentModel request)
+        {
+            try
+            {
+                request.AuthorId = UserId;
+                await _likeService.DeleteCommentLike(request);
+                return Ok();
+            }
+            catch(LikeNotFoundException)
+            {
+                return BadRequest("Лайк не найден");
+            }
+        }
+        [HttpPost]
+        [Authorize]
+        public async Task<ActionResult> DeleteLikeFromPost(LikePostModel request)
+        {
+            try
+            {
+                request.AuthorId = UserId;
+                await _likeService.DeletePostLike(request);
+                return Ok();
+            }
+            catch (LikeNotFoundException)
+            {
+                return BadRequest("Лайк не найден");
+            }
         }
 
     }

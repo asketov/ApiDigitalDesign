@@ -2,6 +2,7 @@
 using ApiDigitalDesign.Models.UserModels;
 using ApiDigitalDesign.Services;
 using AutoMapper;
+using Common.Exceptions.Subscribe;
 using Common.Generics;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -56,8 +57,15 @@ namespace ApiDigitalDesign.Controllers
         [Authorize]
         public async Task<ActionResult> DeleteSubscribe(SubscribeModel request)
         {
-            await _subscribeService.DeleteSubscribeAsync(request);
-            return Ok();
+            try 
+            { 
+                await _subscribeService.DeleteSubscribeAsync(request);
+                return Ok();
+            }
+            catch(SubscribeNotFoundException)
+            {
+                return BadRequest("Подписка не найдена");
+            }
         }
 
     }

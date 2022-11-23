@@ -16,7 +16,12 @@ namespace ApiDigitalDesign.Services
             _mapper = mapper;
             _db = db;
         }
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        /// <exception cref="LikeAlreadyExistException"></exception>
         public async Task AddLikeToComment(LikeCommentModel request)
         {
             if (await GetCommentLike(request) != null) throw new LikeAlreadyExistException();
@@ -38,17 +43,34 @@ namespace ApiDigitalDesign.Services
             await _db.SaveChangesAsync();
         }
 
-        public async Task<Like?> GetPostLike(LikePostModel model)
+        public async Task<PostLike?> GetPostLike(LikePostModel model)
         {
             var like = await _db.PostLikes
                 .FirstOrDefaultAsync(f => f.AuthorId == model.AuthorId && f.PostId == model.PostId);
             return like;
         }
-        public async Task<Like?> GetCommentLike(LikeCommentModel model)
+        public async Task<CommentLike?> GetCommentLike(LikeCommentModel model)
         {
             var like = await _db.CommentLikes
                 .FirstOrDefaultAsync(f => f.AuthorId == model.AuthorId && f.CommentId == model.CommentId);
             return like;
+        }
+
+        public async Task DeleteCommentLike(LikeCommentModel request)
+        {
+            var like = await GetCommentLike(request);
+            if (like == null) throw new LikeNotFoundException();
+            _db.CommentLikes.Remove(like);
+            await _db.SaveChangesAsync();
+            
+        }
+        public async Task DeletePostLike(LikePostModel request)
+        {
+            var like = await GetPostLike(request);
+            if (like == null) throw new LikeNotFoundException();
+            _db.PostLikes.Remove(like);
+            await _db.SaveChangesAsync();
+            
         }
     }
 }

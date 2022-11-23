@@ -15,10 +15,13 @@ namespace ApiDigitalDesign.Controllers
     {
         private readonly AuthService _authService;
         private readonly IMapper _mapper;
-        public AuthController(AuthService authService, IMapper mapper)
+        private readonly UserService _userService;
+
+        public AuthController(AuthService authService, IMapper mapper, UserService userService)
         {
             _authService = authService;
             _mapper = mapper;
+            _userService = userService;
         }
         [HttpPost]
         public async Task<ActionResult> SignIn(SignInRequest request)
@@ -52,6 +55,27 @@ namespace ApiDigitalDesign.Controllers
             {
                 return new JsonResult(new {message = ex.Message})
                     { StatusCode = StatusCodes.Status400BadRequest };
+            }
+        }
+        [HttpPost]
+        public async Task<IActionResult> CreateUser(CreateUserModel request)
+        {
+            try
+            {
+                await _userService.CreateUserAsync(request);
+                var model = _mapper.Map<SignInModel>(request);
+                var tokens = await _authService.GetTokensAsync(model);
+                return Ok(tokens);
+            }
+            catch (UserAlreadyExistException)
+            {
+                return new JsonResult(new { message = "User is already exist" })
+                    { StatusCode = StatusCodes.Status400BadRequest };
+            }
+            catch
+            {
+                return new JsonResult(new { message = "Server can't process the request" })
+                    { StatusCode = StatusCodes.Status503ServiceUnavailable };
             }
         }
     }

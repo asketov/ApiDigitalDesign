@@ -74,27 +74,6 @@ namespace ApiDigitalDesign.Controllers
                     { StatusCode = StatusCodes.Status404NotFound };
             }
         }
-        [HttpPost]
-        public async Task<IActionResult> CreateUser(CreateUserModel request)
-        {
-            try
-            {
-                await _userService.CreateUserAsync(request);
-                var model = _mapper.Map<SignInModel>(request);
-                var tokens = await _authService.GetTokensAsync(model);
-                return Ok(tokens);
-            }
-            catch (UserAlreadyExistException)
-            {
-                return new JsonResult(new { message = "User is already exist" })
-                    { StatusCode = StatusCodes.Status400BadRequest };
-            }
-            catch
-            {
-                return new JsonResult(new { message = "Server can't process the request" }) 
-                    { StatusCode = StatusCodes.Status503ServiceUnavailable };
-            }
-        }
         [HttpGet]
         [Authorize]
         public async Task<ActionResult> GetCurrentUser()
